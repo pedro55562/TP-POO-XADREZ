@@ -1,0 +1,2 @@
+WHITEn = 8
+BLACKn = 16
