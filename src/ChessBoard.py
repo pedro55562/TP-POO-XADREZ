@@ -1,16 +1,16 @@
 import numpy as np
 
-from Position import *
-from Piece import *
-from constantes import *
+from .Position import *
+from .Piece import *
+from .constantes import *
 
-from Bishop import *
-from Pawn import *
-from King import *
-from Knight import *
-from Queen import *
-from Rook import *
-from Empty import *
+from .Bishop import *
+from .Pawn import *
+from .King import *
+from .Knight import *
+from .Queen import *
+from .Rook import *
+from .Empty import *
 
 
 class ChessBoard():
@@ -95,8 +95,3 @@ class ChessBoard():
             print()  # Avança para a próxima linha após imprimir uma linha completa do tabuleiro
 
         # Imprime a posição dos reis
-
-    
-fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-chessboard = ChessBoard(fen)
-chessboard.printBoard()

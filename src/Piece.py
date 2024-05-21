@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from Position import *
+from .Position import *
 
 class Piece(ABC):
     def __init__(self, Position, color, type) -> None:

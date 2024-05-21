@@ -1,6 +1,6 @@
-from Piece import *
-from constantes import *
-from Position import *
+from .Piece import *
+from .constantes import *
+from .Position import *
 
 class Bishop(Piece):
     def __init__(self, Position, color) -> None:

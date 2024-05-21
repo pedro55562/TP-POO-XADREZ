@@ -1,5 +1,5 @@
-from Piece import *
-from constantes import *
+from .Piece import *
+from .constantes import *
 
 class King(Piece):
     def __init__(self, Position, color) -> None:

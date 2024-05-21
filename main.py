@@ -7,3 +7,9 @@
 # *                                                   *
 # *****************************************************
 #
+
+from src import *
+
+fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+chessboard = ChessBoard(fen)
+chessboard.printBoard()
