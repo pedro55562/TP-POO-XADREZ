@@ -6,6 +6,12 @@ class Position():
     def getPosition(self):
         return self
     
+    def getRow(self):
+        return self.row    
+ 
+    def getCol(self):
+        return self.col 
+    
     def setPosition(self, Row, Col):
         self.row = Row
         self.col = Col      

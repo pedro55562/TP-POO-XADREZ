@@ -6,4 +6,6 @@ class Knight(Piece):
         super().__init__(Position, color, KNIGHT)
         
     def IsValidMove(self, to):
-        return True
+        drow = abs(to.getRow() - self.position.getRow()) 
+        dcol = abs(to.getCol() - self.position.getCol())
+        return ((drow == 1)and(dcol == 2)) or ((drow == 2)and(dcol == 1))

@@ -6,4 +6,6 @@ class Rook(Piece):
         super().__init__(Position, color, ROOK)
         
     def IsValidMove(self, to):
-        return True
+        drow = abs(to.getRow() - self.position.getRow()) 
+        dcol = abs(to.getCol() - self.position.getCol())
+        return ((drow != 0) and (dcol == 0)) or ((drow == 0) and (dcol != 0))
