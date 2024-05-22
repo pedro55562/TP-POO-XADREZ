@@ -14,4 +14,8 @@ class Position():
     
     def setPosition(self, Row, Col):
         self.row = Row
-        self.col = Col      
+        self.col = Col    
+        
+    def setPosition(self, pos ):
+        self.row = pos.row
+        self.col = pos.col  

@@ -10,18 +10,31 @@
 
 from src import *
 
-fen = "K6N/2p5/8/8/r1bk4/8/5p2/Q6n"
-chessboard = ChessBoard(fen)
-chessboard.printBoard()
+chessboard = ChessBoard(defaultFen)
 graphicboard = ChessRender(chessboard)
 
 while graphicboard.getShouldclose() == False:
+    chessboard.printBoard()
     graphicboard.setShouldclose()
     graphicboard.render()
-    pos = graphicboard.HandleMouseInput()
-    if pos == -1:
-        break
-    print(pos.getRow()," ",pos.getCol())
     
+    from_ = graphicboard.HandleMouseInput()
+    if from_ == -1:
+        break
+    
+    graphicboard.updateSelectedPiece(from_)
+    
+    graphicboard.render()
+    print( graphicboard.getSelectedPiecePos().getRow()," ", graphicboard.getSelectedPiecePos().getCol())
+    
+    to = graphicboard.HandleMouseInput()
+    if to == -1:
+        break   
+    
+    graphicboard.updateSelectedPiece(from_)
+    
+    chessboard.movePiece(from_, to)
+    
+            
 graphicboard.quit()
 print("JOGO FECHADO COM SUCESSO")

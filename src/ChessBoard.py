@@ -1,4 +1,5 @@
 import numpy as np
+from typing import List
 
 from .Position import *
 from .Piece import *
@@ -12,21 +13,42 @@ from .Queen import *
 from .Rook import *
 from .Empty import *
 
+class Move:
+    def __init__(self, start : Position , end : Position , board) -> None:
+        # Armazenar Posiçoes...
+        self.startRow = start.getRow()
+        self.startCol = start.getCol()
+        self.endRow = end.getRow()
+        self.endCol = end.getCol()
+        # Armazenar peças...
+        self.pieceMoved = board[self.startRow][self.startCol]
+        self.pieceCaptured = board[self.endRow][self.endCol]
+        
+    #implementando o rank-file notation   
+    def getChessNotation(self) -> str:
+        #ToDo: add things to make REAL chess notation
+        return str(self.getRankFile(self.startRow, self.startCol)) + str(self.getRankFile(self.endRow, self.endCol))
+        
+    def getRankFile(self, row, col):
+        #file than rank 
+        #ex: a8
+        return colsTOfiles[col] + rowsTOranks[row]
+  
 
 class ChessBoard():
     
     def __init__(self, fen) -> None:
         self.board = np.full((8, 8), Empty(Position(0,0)))
         
-        isWhiteTurn = True
-        
-        row = 0
-        col = 0
+        self.isWhiteTurn = True
         
         self.white_king_pos = Position(-1,-1)
         self.black_king_pos = Position(-1,-1)
         
-
+        self.move_log = []
+        
+        row = 0
+        col = 0
         # Loop para ler a FEN e carregar o tabuleiro, lendo e tratando cada char individualmente
         for c in fen:
             # Fim da notação FEN
@@ -77,8 +99,11 @@ class ChessBoard():
                     self.board[row][col] = piece
                     col += 1
 
-    def getPiece(self,row,col):
+    def getPiece(self,row,col) -> Piece:
         return self.board[row][col]
+
+    def getPiece(self,pos : Position) -> Piece:
+        return self.board[pos.getRow()][pos.getCol()]
 
     def printBoard(self):
         # Loop para imprimir os tipos das peças no tabuleiro
@@ -89,7 +114,7 @@ class ChessBoard():
             print()  # Avança para a próxima linha após imprimir uma linha completa do tabuleiro
 
         # Loop para imprimir as cores das peças no tabuleiro
-        print("\n Imprimindo o tipo das peças: \n")
+        print("\n Imprimindo a cor das peças: \n")
         for i in range(len(self.board)):
             for j in range(len(self.board[i])):
                 print(" ", self.board[i][j].getColor(), end="")
@@ -98,3 +123,204 @@ class ChessBoard():
         # Imprime a posição dos reis
         print(f"Rei branco:{self.white_king_pos.getRow()} {self.white_king_pos.getCol()}")
         print(f"Rei preto:{self.black_king_pos.getRow()} {self.black_king_pos.getCol()}") 
+        
+    def makeMove(self, move : Move):
+        self.getPiece(Position(move.startRow, move.startCol)).attPosition( Position(move.endRow, move.endCol))
+        self.board[move.startRow][move.startCol] = Empty(Position(move.startRow, move.startCol))
+        self.board[move.endRow][move.endCol] = move.pieceMoved
+        self.move_log.append(move)
+        print(move.getChessNotation() )
+        
+    def undoMove(self):
+        pass    
+        
+    def movePiece(self, from_ : Position , to : Position):
+        if( self.isValidMove(from_,to) == True ):
+            self.makeMove(Move(from_, to, self.board))
+            #self.getPiece(from_).attPosition(to)
+            #self.board[to.getRow()][to.getCol()] = self.board[from_.getRow()][from_.getCol()]
+            #self.board[from_.getRow()][from_.getCol()] = Empty(from_)                
+    
+    def isValidMove(self, from_ : Position , to : Position):
+        if(self.getPiece(to).getColor() == self.getPiece(from_).getColor()):
+            return False
+        
+        #cavalo
+        if( self.getPiece(from_).getType() == KNIGHT  ):
+            return self.getPiece(from_).IsValidMove(to)
+        
+        #peao
+        if( self.getPiece(from_).getType() == PAWN ):
+            return self.getPiece(from_).IsValidMove(to, self.getPiece(to).getColor())
+        
+        
+        #restante
+        isclear = self.isPathClear(from_, to)
+        
+        valid = self.getPiece(from_).IsValidMove(to)
+        
+        return valid and isclear
+
+    def isPathClear(self, start : Position , to : Position):
+        dr = to.getRow() - start.getRow()
+        dc = to.getCol() - start.getCol()
+        udr = 1 if dr > 0 else -1
+        udc = 1 if dc > 0 else -1
+        
+        curcol = start.getCol()
+        currow = start.getRow() 
+            
+        #mov. horizontal ( pelas colunas):
+        if( dr == 0 and dc != 0):
+            curcol+=udc
+            while(curcol != to.getCol()):
+                if( self.getPiece(Position(currow,curcol)).getType() != EMPTY):
+                    return False
+                curcol+=udc      
+        #mov. vertical ( pelas linhas):
+        elif( dr != 0 and dc == 0):
+            currow+=udr
+            while(currow != to.getRow()):
+                if( self.getPiece(Position(currow,curcol)).getType() != EMPTY):
+                    return False
+                currow+=udr
+        #mov. diagonal...
+        elif( abs(dr) == abs(dc)):
+            curcol += udc
+            currow += udr
+            while(currow != to.getRow() and curcol != to.getCol()):
+                if(self.getPiece(Position(currow, curcol)).getType() != EMPTY):
+                    return False
+                curcol += udc
+                currow += udr
+        else:
+            return True
+        return True
+               
+                
+    def getPossibleMoves(self, pos  : Position) -> List[Position]:
+        list_ = []
+    
+        piece = self.getPiece(pos)
+
+        if ( piece.getType() == KING):
+            kdir = [0, 1, -1]
+            for dr in kdir:
+                for dc in kdir:
+                    if dr == 0 and dc == 0:
+                        continue
+                    
+                    dest = Position(pos.getRow() + dr , pos.getCol() + dc)
+                    
+                    if ( dest.getCol() < 0 or dest.getCol() > 7):
+                        continue
+                    elif ( dest.getRow() < 0 or dest.getRow() > 7):
+                        continue                    
+
+                    if self.isValidMove(pos,dest) == True:
+                        print(dest.getRow(),"---",dest.getCol())                    
+                        list_.append(dest)
+
+        if ( piece.getType() == PAWN):
+            prow = [-1,-2,1,2]
+            pcol = [0,1,-1]
+            for dr in prow:
+                for dc in pcol:
+                    if dr == 0 and dc == 0:
+                        continue
+                    
+                    dest = Position(pos.getRow() + dr , pos.getCol() + dc)
+                    
+                    if ( dest.getCol() < 0 or dest.getCol() > 7):
+                        continue
+                    elif ( dest.getRow() < 0 or dest.getRow() > 7):
+                        continue                    
+
+                    if self.isValidMove(pos,dest) == True:
+                        print(dest.getRow(),"---",dest.getCol())                    
+                        list_.append(dest)
+
+        if piece.getType() == BISHOP:
+            dir1 = [1, -1]
+            dir2 = [1, -1]
+            
+            for dr in dir1:
+                for dc in dir2:
+                    crow, ccol = pos.getRow() + dr, pos.getCol() + dc
+                    while 0 <= crow < 8 and 0 <= ccol < 8:
+                        dest = Position(crow, ccol)
+
+                        if self.isValidMove(pos, dest):
+                            list_.append(dest)
+
+                        crow += dr
+                        ccol += dc
+
+        if piece.getType() == QUEEN:
+            dir_row = [1, -1, 0, 0]
+            dir_col = [0, 0, 1, -1]
+            for dr in dir_row:
+                cur_row = pos.getRow() + dr
+                while 0 <= cur_row < 8:
+                    dest = Position(cur_row, pos.getCol())
+                    if self.isValidMove(pos, dest):
+                        list_.append(dest)
+                    else:
+                        break
+                    cur_row += dr
+
+            for dc in dir_col:
+                cur_col = pos.getCol() + dc
+                while 0 <= cur_col < 8:
+                    dest = Position(pos.getRow(), cur_col)
+                    if self.isValidMove(pos, dest):
+                        list_.append(dest)
+                    else:
+                        break
+                    cur_col += dc
+
+            dir_diag = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
+            for dr, dc in dir_diag:
+                cur_row, cur_col = pos.getRow() + dr, pos.getCol() + dc
+                while 0 <= cur_row < 8 and 0 <= cur_col < 8:
+                    dest = Position(cur_row, cur_col)
+                    if self.isValidMove(pos, dest):
+                        list_.append(dest)
+                    else:
+                        break
+                    cur_row += dr
+                    cur_col += dc
+
+        if piece.getType() == KNIGHT:
+            valid_moves = [(-1, 2), (-1, -2), (1, 2), (1, -2), (-2, 1), (-2, -1), (2, 1), (2, -1)]
+            for dr, dc in valid_moves:
+                dest = Position(pos.getRow() + dr, pos.getCol() + dc)
+                if 0 <= dest.getRow() < 8 and 0 <= dest.getCol() < 8:
+                    if self.isValidMove(pos, dest) and self.getPiece(dest).getColor() != piece.getColor():
+                        list_.append(dest)
+
+        if piece.getType() == ROOK:
+            dir_row = [1, -1]
+            dir_col = [1, -1]
+            for dr in dir_row:
+                cur_row = pos.getRow() + dr
+                while 0 <= cur_row < 8:
+                    dest = Position(cur_row, pos.getCol())
+                    if self.isValidMove(pos, dest) and self.getPiece(dest).getColor() != piece.getColor():
+                        list_.append(dest)
+                    else:
+                        break
+                    cur_row += dr
+
+            for dc in dir_col:
+                cur_col = pos.getCol() + dc
+                while 0 <= cur_col < 8:
+                    dest = Position(pos.getRow(), cur_col)
+                    if self.isValidMove(pos, dest) and self.getPiece(dest).getColor() != piece.getColor():
+                        list_.append(dest)
+                    else:
+                        break
+                    cur_col += dc
+
+        return list_
+        

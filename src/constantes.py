@@ -1,3 +1,31 @@
+#map: key : value
+ranksTOrows ={
+    "1" : 7,
+    "2" : 6,
+    "3" : 5,
+    "4" : 4,
+    "5" : 3,
+    "6" : 2,
+    "7" : 1,
+    "8" : 0
+}
+
+rowsTOranks ={v : k for k, v in ranksTOrows.items() }
+
+filesTOcols ={
+    "h" : 7,
+    "g" : 6,
+    "f" : 5,
+    "e" : 4,
+    "d" : 3,
+    "c" : 2,
+    "b" : 1,
+    "a" : 0
+}
+
+colsTOfiles ={v : k for k, v in filesTOcols.items() }
+
+
 defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
 WHITEn = 8

@@ -8,6 +8,9 @@ class Piece(ABC):
         self.color = color
         self.type = type
     
+    def attPosition(self, pos : Position):
+        self.position.setPosition(pos)
+    
     def getColor(self):
         return self.color    
     

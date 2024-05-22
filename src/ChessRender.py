@@ -1,5 +1,6 @@
 import numpy as np
 import pygame
+from typing import List
 
 from .Position import *
 from .Piece import *
@@ -23,6 +24,15 @@ class ChessRender():
         self.screen =  pygame.display.set_mode((window_width, window_height))
         pygame.display.set_caption('Chess Game')
         self.clock = pygame.time.Clock()
+        self.isPieceSelected = False
+        self.SelectedPiece = Position(-1,-1)
+
+    def getSelectedPiecePos(self) -> Position:
+        return self.SelectedPiece
+
+    def updateSelectedPiece(self, pos : Position):
+        self.SelectedPiece = pos
+        self.isPieceSelected = not(self.isPieceSelected)
         
     def quit(self) -> None:
         pygame.quit()
@@ -39,7 +49,7 @@ class ChessRender():
         for row in range (0,8):
             for col in range (0,8):
                 isLight = (row + col) % 2 == 0
-                rec = pygame.Rect(row*squareSize, col*squareSize,squareSize,squareSize )
+                rec = pygame.Rect(col*squareSize, row*squareSize,squareSize,squareSize )
                 if (isLight == True):
                     pygame.draw.rect(self.screen , light, rec)
                 elif (isLight == False):
@@ -48,7 +58,7 @@ class ChessRender():
     def renderPiece(self):
         for row in range (0,8):
             for col in range (0,8):
-                piece = self.board.getPiece(row,col)
+                piece = self.board.getPiece(Position(row,col))
                 if (piece.getType() == EMPTY):
                     continue
                 piece_image = pygame.image.load( base_path + Type[piece.getType()] +'_'+ Color[piece.getColor()] + '.png')
@@ -56,14 +66,21 @@ class ChessRender():
                 self.screen.blit(piece_image,(col*squareSize,row*squareSize))
     
     def renderPossibleDestinations(self):
-        pass
+        if self.isPieceSelected == False:
+            return
+        list_ = self.board.getPossibleMoves(self.SelectedPiece)
+        if list_ is not None:
+            for pos in list_:
+                rec = pygame.Rect(pos.getCol()*squareSize, pos.getRow()*squareSize,squareSize,squareSize )
+                pygame.draw.rect(self.screen , red_, rec)
+
 
     def render(self):
         self.renderBoard()
+        self.renderPossibleDestinations()
         self.renderPiece()
         pygame.display.update()
         
-
     def targetFps(self):
         self.clock.tick(1)
     
