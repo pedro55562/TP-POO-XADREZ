@@ -1,5 +1,3 @@
-# src/__init__.py
-
 from .Position import *
 from .Piece import *
 from .constantes import *

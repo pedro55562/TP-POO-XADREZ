@@ -16,7 +16,7 @@ from .Empty import *
 class ChessBoard():
     
     def __init__(self, fen) -> None:
-        self.board = np.full((8, 8), Empty(Position(-1,-1)))
+        self.board = np.full((8, 8), Empty(Position(0,0)))
         
         isWhiteTurn = True
         
@@ -37,14 +37,12 @@ class ChessBoard():
                 row += 1
                 col = 0
             # Caso o caractere for um número, esse número indica a quantidade de casas vazias em sequência
-            elif c.isdigit():
+            elif c.isdigit() == True:
                 number_of_empty_spaces = int(c)
                 # Loop para colocar no tabuleiro a quantidade de casas vazias
-                temp = 0
-                while temp < number_of_empty_spaces:
-                    self.board[row][col] = Empty(Position(row,col))
+                for _ in range(0,number_of_empty_spaces):
+                    self.board[row][col] = Empty(Position(row, col))
                     col += 1
-                    temp += 1
             else:
                 # Switch-case responsável por descobrir qual é a peça a ser inserida e inseri-la no tabuleiro
                 piece = None
@@ -75,9 +73,12 @@ class ChessBoard():
                     piece = King(Position(row,col) , WHITEn)
                     self.white_king_pos = Position(row, col)
    
-                if piece:
+                if piece != None:
                     self.board[row][col] = piece
                     col += 1
+
+    def getPiece(self,row,col):
+        return self.board[row][col]
 
     def printBoard(self):
         # Loop para imprimir os tipos das peças no tabuleiro
@@ -95,3 +96,5 @@ class ChessBoard():
             print()  # Avança para a próxima linha após imprimir uma linha completa do tabuleiro
 
         # Imprime a posição dos reis
+        print(f"Rei branco:{self.white_king_pos.getRow()} {self.white_king_pos.getCol()}")
+        print(f"Rei preto:{self.black_king_pos.getRow()} {self.black_king_pos.getCol()}") 
