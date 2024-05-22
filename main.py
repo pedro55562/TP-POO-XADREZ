@@ -14,13 +14,15 @@ chessboard = ChessBoard(defaultFen)
 graphicboard = ChessRender(chessboard)
 
 while graphicboard.getShouldclose() == False:
-    chessboard.printBoard()
     graphicboard.setShouldclose()
     graphicboard.render()
     
     from_ = graphicboard.HandleMouseInput()
+    
     if from_ == -1:
         break
+    elif from_ ==-2:
+        continue
     
     graphicboard.updateSelectedPiece(from_)
     
@@ -28,8 +30,11 @@ while graphicboard.getShouldclose() == False:
     print( graphicboard.getSelectedPiecePos().getRow()," ", graphicboard.getSelectedPiecePos().getCol())
     
     to = graphicboard.HandleMouseInput()
+    
     if to == -1:
         break   
+    elif from_ == -2:
+        continue
     
     graphicboard.updateSelectedPiece(from_)
     

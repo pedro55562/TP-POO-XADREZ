@@ -65,6 +65,14 @@ class ChessRender():
                 piece_image = pygame.transform.scale(piece_image, (squareSize, squareSize) )
                 self.screen.blit(piece_image,(col*squareSize,row*squareSize))
     
+    def renderAllMoves(self):
+        movess = self.board.getAllMoves()
+        if movess is not None:
+            for move in movess:
+                pos = Position(move.endRow , move.endCol)
+                rec = pygame.Rect(pos.getCol()*squareSize, pos.getRow()*squareSize,squareSize,squareSize )
+                pygame.draw.rect(self.screen , red_, rec)
+    
     def renderPossibleDestinations(self):
         if self.isPieceSelected == False:
             return
@@ -73,7 +81,6 @@ class ChessRender():
             for pos in list_:
                 rec = pygame.Rect(pos.getCol()*squareSize, pos.getRow()*squareSize,squareSize,squareSize )
                 pygame.draw.rect(self.screen , red_, rec)
-
 
     def render(self):
         self.renderBoard()
@@ -93,13 +100,16 @@ class ChessRender():
                 if event.type == pygame.QUIT:
                     self.shouldclose = True
                     return -1
-                if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_focused():
+                elif event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_focused():
                     if event.button == 1:
                         waiting = False
                         mouse_pos = pygame.mouse.get_pos()
                         board_pos = Position( mouse_pos[1] // 100 ,mouse_pos[0] // 100   )
                         if(-1 < board_pos.getRow() < 8) and (-1 < board_pos.getCol() < 8):
                             return Position( mouse_pos[1] // 100 ,mouse_pos[0] // 100   )
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_z:
+                        self.board.undoMove()
+                        return -2
         return -1
-
-
+    
