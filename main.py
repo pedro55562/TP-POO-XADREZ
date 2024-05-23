@@ -16,6 +16,10 @@ graphicboard = ChessRender(chessboard)
 while graphicboard.getShouldclose() == False:
     graphicboard.setShouldclose()
     graphicboard.render()
+
+    if(chessboard.getMoveMade() == True):
+        chessboard.setNewValidmoves()
+            
     
     from_ = graphicboard.HandleMouseInput()
     
@@ -40,6 +44,6 @@ while graphicboard.getShouldclose() == False:
     
     chessboard.movePiece(from_, to)
     
-            
+    
 graphicboard.quit()
 print("JOGO FECHADO COM SUCESSO")

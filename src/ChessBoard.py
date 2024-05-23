@@ -23,7 +23,13 @@ class Move:
         # Armazenar peças...
         self.pieceMoved = board[self.startRow][self.startCol]
         self.pieceCaptured = board[self.endRow][self.endCol]
-        
+        self.moveId = self.startRow*1000 + self.startCol*100 + self.endRow*10 + self.endCol
+    
+    def __eq__(self,other):
+        if isinstance(other,Move):
+            return (self.moveId == other.moveId)
+        return False
+    
     #implementando o rank-file notation   
     def getChessNotation(self) -> str:
         #ToDo: add things to make REAL chess notation
@@ -33,7 +39,7 @@ class Move:
         #file than rank 
         #ex: a8
         return colsTOfiles[col] + rowsTOranks[row]
-  
+    
 
 class ChessBoard():
     
@@ -98,7 +104,10 @@ class ChessBoard():
                 if piece != None:
                     self.board[row][col] = piece
                     col += 1
-
+        
+        self.moveMade = False
+        self.validmoves = self.getValidMoves()
+        
     def getPiece(self,row,col) -> Piece:
         return self.board[row][col]
 
@@ -130,8 +139,16 @@ class ChessBoard():
         self.board[move.endRow][move.endCol] = move.pieceMoved
         self.move_log.append(move)
         self.isWhiteTurn = not self.isWhiteTurn 
+        self.moveMade = True
         print(move.getChessNotation() )
         
+    def setNewValidmoves(self):
+        if (self.getMoveMade()):
+            self.moveMade = False
+            self.validmoves = self.getValidMoves()
+            return True
+        return False
+          
     def undoMove(self):
         if len(self.move_log) != 0:
             lastmove = self.move_log.pop()
@@ -140,20 +157,26 @@ class ChessBoard():
             self.board[lastmove.startRow][lastmove.startCol].attPosition( Position(lastmove.startRow, lastmove.startCol))
             self.board[lastmove.endRow][lastmove.endCol].attPosition( Position(lastmove.endRow, lastmove.endCol))
             self.isWhiteTurn = not self.isWhiteTurn 
+            self.moveMade = True
+
+    def getMoveMade(self):
+        return self.moveMade
             
     def movePiece(self, from_ : Position , to : Position):
-        if( self.isPossibleMove(from_,to) == True ):
+        if( self.isValidMove( Move(from_,to, self.board  )) == True ):
             self.makeMove(Move(from_, to, self.board))
             #self.getPiece(from_).attPosition(to)
             #self.board[to.getRow()][to.getCol()] = self.board[from_.getRow()][from_.getCol()]
             #self.board[from_.getRow()][from_.getCol()] = Empty(from_)                
     
-    #Considerando o cheque
-    #ToDO
-    def isValidMove(self, from_ : Position , to : Position):
-        pass
+#Considerando o cheque
+#ToDO
+    def isValidMove(self, move : Move):
+        if move in self.validmoves:
+            return True
+        return False
 
-    #SEM considerar o cheque o cheque
+#SEM considerar o cheque o cheque
     def isPossibleMove(self, from_ : Position , to : Position):
         if(self.getPiece(to).getColor() == self.getPiece(from_).getColor()):
             return False
@@ -340,7 +363,7 @@ class ChessBoard():
 #TODOS Movimentos considerando o cheque
 #ToDO
     def getValidMoves(self):
-        pass
+        return self.getAllMoves()
     
 #TODOS Movimentos SEM considerar o cheque
     def getAllMoves(self):
@@ -351,6 +374,7 @@ class ChessBoard():
                 isWhitePiece = (piece.getColor() == WHITEn)
                 if (isWhitePiece == self.isWhiteTurn):
                     pos = Position(row,col)
+                    
                     if ( piece.getType() == KING):
                         kdir = [0, 1, -1]
                         for dr in kdir:
@@ -366,7 +390,6 @@ class ChessBoard():
                                     continue                    
 
                                 if self.isPossibleMove(pos,dest) == True:
-                                    print(dest.getRow(),"---",dest.getCol())                    
                                     moves.append(Move(pos, dest, self.board ))
 
                     if ( piece.getType() == PAWN):

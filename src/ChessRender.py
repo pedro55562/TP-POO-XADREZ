@@ -66,7 +66,9 @@ class ChessRender():
                 self.screen.blit(piece_image,(col*squareSize,row*squareSize))
     
     def renderAllMoves(self):
-        movess = self.board.getAllMoves()
+        if self.isPieceSelected == False:
+            return
+        movess = self.board.validmoves
         if movess is not None:
             for move in movess:
                 pos = Position(move.endRow , move.endCol)
