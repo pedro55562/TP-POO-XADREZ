@@ -78,7 +78,7 @@ class ChessRender():
     def renderPossibleDestinations(self):
         if self.isPieceSelected == False:
             return
-        list_ = self.board.getPossibleMoves(self.SelectedPiece)
+        list_ = self.board.getMoves(self.SelectedPiece)
         if list_ is not None:
             for pos in list_:
                 rec = pygame.Rect(pos.getCol()*squareSize, pos.getRow()*squareSize,squareSize,squareSize )

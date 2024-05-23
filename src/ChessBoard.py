@@ -234,130 +234,14 @@ class ChessBoard():
         return True
                
 #METODO TEMPORARIO        
-    def getPossibleMoves(self, pos  : Position) -> List[Position]:
+    def getMoves(self, pos  : Position) -> List[Position]:
         list_ = []
-    
         piece = self.getPiece(pos)
-
-        if ( piece.getType() == KING):
-            kdir = [0, 1, -1]
-            for dr in kdir:
-                for dc in kdir:
-                    if dr == 0 and dc == 0:
-                        continue
-                    
-                    dest = Position(pos.getRow() + dr , pos.getCol() + dc)
-                    
-                    if ( dest.getCol() < 0 or dest.getCol() > 7):
-                        continue
-                    elif ( dest.getRow() < 0 or dest.getRow() > 7):
-                        continue                    
-
-                    if self.isPossibleMove(pos,dest) == True:
-                        print(dest.getRow(),"---",dest.getCol())                    
-                        list_.append(dest)
-
-        if ( piece.getType() == PAWN):
-            prow = [-1,-2,1,2]
-            pcol = [0,1,-1]
-            for dr in prow:
-                for dc in pcol:
-                    if dr == 0 and dc == 0:
-                        continue
-                    
-                    dest = Position(pos.getRow() + dr , pos.getCol() + dc)
-                    
-                    if ( dest.getCol() < 0 or dest.getCol() > 7):
-                        continue
-                    elif ( dest.getRow() < 0 or dest.getRow() > 7):
-                        continue                    
-
-                    if self.isPossibleMove(pos,dest) == True:
-                        print(dest.getRow(),"---",dest.getCol())                    
-                        list_.append(dest)
-
-        if piece.getType() == BISHOP:
-            dir1 = [1, -1]
-            dir2 = [1, -1]
-            
-            for dr in dir1:
-                for dc in dir2:
-                    crow, ccol = pos.getRow() + dr, pos.getCol() + dc
-                    while 0 <= crow < 8 and 0 <= ccol < 8:
-                        dest = Position(crow, ccol)
-
-                        if self.isPossibleMove(pos, dest):
-                            list_.append(dest)
-
-                        crow += dr
-                        ccol += dc
-
-        if piece.getType() == QUEEN:
-            dir_row = [1, -1, 0, 0]
-            dir_col = [0, 0, 1, -1]
-            for dr in dir_row:
-                cur_row = pos.getRow() + dr
-                while 0 <= cur_row < 8:
-                    dest = Position(cur_row, pos.getCol())
-                    if self.isPossibleMove(pos, dest):
-                        list_.append(dest)
-                    else:
-                        break
-                    cur_row += dr
-
-            for dc in dir_col:
-                cur_col = pos.getCol() + dc
-                while 0 <= cur_col < 8:
-                    dest = Position(pos.getRow(), cur_col)
-                    if self.isPossibleMove(pos, dest):
-                        list_.append(dest)
-                    else:
-                        break
-                    cur_col += dc
-
-            dir_diag = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
-            for dr, dc in dir_diag:
-                cur_row, cur_col = pos.getRow() + dr, pos.getCol() + dc
-                while 0 <= cur_row < 8 and 0 <= cur_col < 8:
-                    dest = Position(cur_row, cur_col)
-                    if self.isPossibleMove(pos, dest):
-                        list_.append(dest)
-                    else:
-                        break
-                    cur_row += dr
-                    cur_col += dc
-
-        if piece.getType() == KNIGHT:
-            valid_moves = [(-1, 2), (-1, -2), (1, 2), (1, -2), (-2, 1), (-2, -1), (2, 1), (2, -1)]
-            for dr, dc in valid_moves:
-                dest = Position(pos.getRow() + dr, pos.getCol() + dc)
-                if 0 <= dest.getRow() < 8 and 0 <= dest.getCol() < 8:
-                    if self.isPossibleMove(pos, dest) and self.getPiece(dest).getColor() != piece.getColor():
-                        list_.append(dest)
-
-        if piece.getType() == ROOK:
-            dir_row = [1, -1]
-            dir_col = [1, -1]
-            for dr in dir_row:
-                cur_row = pos.getRow() + dr
-                while 0 <= cur_row < 8:
-                    dest = Position(cur_row, pos.getCol())
-                    if self.isPossibleMove(pos, dest) and self.getPiece(dest).getColor() != piece.getColor():
-                        list_.append(dest)
-                    else:
-                        break
-                    cur_row += dr
-
-            for dc in dir_col:
-                cur_col = pos.getCol() + dc
-                while 0 <= cur_col < 8:
-                    dest = Position(pos.getRow(), cur_col)
-                    if self.isPossibleMove(pos, dest) and self.getPiece(dest).getColor() != piece.getColor():
-                        list_.append(dest)
-                    else:
-                        break
-                    cur_col += dc
-
+        for move in self.validmoves:
+            if move.startRow == pos.getRow() and move.startCol == pos.getCol():
+                list_.append(Position(move.endRow, move.endCol))
+        
+        
         return list_
 
 #TODOS Movimentos considerando o cheque
