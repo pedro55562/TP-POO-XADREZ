@@ -9,7 +9,7 @@
 #
 
 from src import *
-
+fen = "8/2k5/8/8/8/8/2K5/8"
 chessboard = ChessBoard(defaultFen)
 graphicboard = ChessRender(chessboard)
 
@@ -17,6 +17,8 @@ while graphicboard.getShouldclose() == False:
     graphicboard.setShouldclose()
     graphicboard.render()
 
+    chessboard.printBoard()
+    
     if(chessboard.getMoveMade() == True):
         chessboard.setNewValidmoves()
             

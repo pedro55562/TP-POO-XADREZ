@@ -108,6 +108,9 @@ class ChessBoard():
         self.moveMade = False
         self.validmoves = self.getValidMoves()
         
+        self.checkMate = False
+        self.stalteMate = False #  one side has NO legal moves to make and the king is not in check => DRAW
+               
     def getPiece(self,row,col) -> Piece:
         return self.board[row][col]
 
@@ -141,7 +144,14 @@ class ChessBoard():
         self.isWhiteTurn = not self.isWhiteTurn 
         self.moveMade = True
         print(move.getChessNotation() )
-        
+        #muda a posicao do rei
+        if(self.board[move.endRow][move.endCol].getType() == KING ):
+            if (self.board[move.endRow][move.endCol].getColor() == BLACKn):
+                self.black_king_pos = Position(move.endRow, move.endCol)
+                
+            elif (self.board[move.endRow][move.endCol].getColor() == WHITEn):
+                self.white_king_pos = Position(move.endRow, move.endCol)
+               
     def setNewValidmoves(self):
         if (self.getMoveMade()):
             self.moveMade = False
@@ -158,6 +168,22 @@ class ChessBoard():
             self.board[lastmove.endRow][lastmove.endCol].attPosition( Position(lastmove.endRow, lastmove.endCol))
             self.isWhiteTurn = not self.isWhiteTurn 
             self.moveMade = True
+            if(self.board[lastmove.endRow][lastmove.endCol].getType() == KING ):
+                if (self.board[lastmove.endRow][lastmove.endCol].getColor() == BLACKn):
+                    self.black_king_pos = Position(lastmove.endRow, lastmove.endCol)
+                    
+                elif (self.board[lastmove.startRow][lastmove.startCol].getColor() == WHITEn):
+                    self.white_king_pos = Position(lastmove.startRow, lastmove.startCol)
+ 
+            if(self.board[lastmove.startRow][lastmove.startCol].getType() == KING ):
+                if (self.board[lastmove.startRow][lastmove.startCol].getColor() == BLACKn):
+                    self.black_king_pos = Position(lastmove.startRow, lastmove.startCol)
+                    
+                elif (self.board[lastmove.startRow][lastmove.startCol].getColor() == WHITEn):
+                    self.white_king_pos = Position(lastmove.startRow, lastmove.startCol)
+        
+            self.checkMate = False
+            self.stalteMate = False
 
     def getMoveMade(self):
         return self.moveMade
@@ -169,14 +195,13 @@ class ChessBoard():
             #self.board[to.getRow()][to.getCol()] = self.board[from_.getRow()][from_.getCol()]
             #self.board[from_.getRow()][from_.getCol()] = Empty(from_)                
     
-#Considerando o cheque
-#ToDO
+#Considerando o xeque
     def isValidMove(self, move : Move):
         if move in self.validmoves:
             return True
         return False
 
-#SEM considerar o cheque o cheque
+#SEM considerar o xeque
     def isPossibleMove(self, from_ : Position , to : Position):
         if(self.getPiece(to).getColor() == self.getPiece(from_).getColor()):
             return False
@@ -233,7 +258,6 @@ class ChessBoard():
             return True
         return True
                
-#METODO TEMPORARIO        
     def getMoves(self, pos  : Position) -> List[Position]:
         list_ = []
         piece = self.getPiece(pos)
@@ -244,12 +268,54 @@ class ChessBoard():
         
         return list_
 
-#TODOS Movimentos considerando o cheque
-#ToDO
+#TODOS Movimentos considerando o xeque
     def getValidMoves(self):
-        return self.getAllMoves()
+        # 1) Generate all the possibles moves
+        moves = self.getAllMoves()
+        # 2) For each move, make the move
+        for i in range(len(moves) - 1 , -1 , -1): # por estar removendo da lista, comece por tras
+            self.makeMove( moves[i] )
+            self.isWhiteTurn = not self.isWhiteTurn #destrocar os turnos porque make move o trocou
+            # 3) Generate all opponent's moves 
+            # 4) for each of your opponent's moves, see if they atack your king
+            if self.inCheck():
+            # 5) if they do atack your king, it's not valid
+                moves.remove(moves[i])
+            self.isWhiteTurn = not self.isWhiteTurn        
+            self.undoMove()
+        
+        if ( len(moves) == 0): #Check mate or stalemate
+            if self.inCheck():
+                self.checkMate = True
+            else:
+                self.stalteMate = True
+        else:
+            self.checkMate = False
+            self.stalteMate = False
+        return moves
     
-#TODOS Movimentos SEM considerar o cheque
+    #determina se o jogador atual esta em xeque 
+    def inCheck(self):
+        if self.isWhiteTurn:
+            return self.mySquareUnderAttack(self.white_king_pos)
+        else:
+            return self.mySquareUnderAttack(self.black_king_pos)
+    
+    #verifica se o OPONENTE ataca um quadrado especifico    
+    def mySquareUnderAttack(self, square : Position):
+        #switch to opponent's side of view, because i wanna see their moves
+        self.isWhiteTurn = not self.isWhiteTurn
+        #generate all of my opponent's moves
+        oppmoves = self.getAllMoves()
+        #verify if any of their moves attack my square
+        for moves in oppmoves:
+            if moves.endRow == square.getRow() and moves.endCol == square.getCol():
+                self.isWhiteTurn = not self.isWhiteTurn # switch turns back
+                return True
+        self.isWhiteTurn = not self.isWhiteTurn # switch turns back
+        return False
+   
+#TODOS Movimentos SEM considerar o xeque
     def getAllMoves(self):
         moves = []
         for row in range ( len(self.board)):
@@ -378,3 +444,5 @@ class ChessBoard():
                                 cur_col += dc
         return moves                      
                         
+                        
+#USING NAIVE ALG.:

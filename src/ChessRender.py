@@ -24,8 +24,10 @@ class ChessRender():
         self.screen =  pygame.display.set_mode((window_width, window_height))
         pygame.display.set_caption('Chess Game')
         self.clock = pygame.time.Clock()
+        
         self.isPieceSelected = False
         self.SelectedPiece = Position(-1,-1)
+        self.possibleDest = []
 
     def getSelectedPiecePos(self) -> Position:
         return self.SelectedPiece
@@ -33,6 +35,8 @@ class ChessRender():
     def updateSelectedPiece(self, pos : Position):
         self.SelectedPiece = pos
         self.isPieceSelected = not(self.isPieceSelected)
+        if self.isPieceSelected:
+            self.possibleDest = self.board.getMoves(self.SelectedPiece)
         
     def quit(self) -> None:
         pygame.quit()
@@ -78,9 +82,8 @@ class ChessRender():
     def renderPossibleDestinations(self):
         if self.isPieceSelected == False:
             return
-        list_ = self.board.getMoves(self.SelectedPiece)
-        if list_ is not None:
-            for pos in list_:
+        if self.possibleDest is not None:
+            for pos in self.possibleDest:
                 rec = pygame.Rect(pos.getCol()*squareSize, pos.getRow()*squareSize,squareSize,squareSize )
                 pygame.draw.rect(self.screen , red_, rec)
 
