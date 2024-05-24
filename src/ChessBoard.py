@@ -14,7 +14,7 @@ from .Rook import *
 from .Empty import *
 
 class Move:
-    def __init__(self, start : Position , end : Position , board) -> None:
+    def __init__(self, start : Position , end : Position , board , isenpassant = False ) -> None:
         # Armazenar Posiçoes...
         self.startRow = start.getRow()
         self.startCol = start.getCol()
@@ -24,7 +24,15 @@ class Move:
         self.pieceMoved = board[self.startRow][self.startCol]
         self.pieceCaptured = board[self.endRow][self.endCol]
         self.moveId = self.startRow*1000 + self.startCol*100 + self.endRow*10 + self.endCol
-    
+        #Armazenar infos...
+        self.isPawnPromotion = (self.pieceMoved.getColor() == BLACKn and self.endRow == 7) or \
+                               (self.pieceMoved.getColor() == WHITEn and self.endRow == 0) 
+
+        self.isEnPassantMove = isenpassant
+        if self.isEnPassantMove:
+            self.pieceCaptured = board[self.startRow][self.endCol]
+        
+        
     def __eq__(self,other):
         if isinstance(other,Move):
             return (self.moveId == other.moveId)
@@ -52,6 +60,10 @@ class ChessBoard():
         self.black_king_pos = Position(-1,-1)
         
         self.move_log = []
+        
+
+        self.enpassantPossible = Position(-1,-1) # cordinates where en passant capture is possible
+        self.isenpassantAvaliable = False
         
         row = 0
         col = 0
@@ -110,7 +122,7 @@ class ChessBoard():
         
         self.checkMate = False
         self.stalteMate = False #  one side has NO legal moves to make and the king is not in check => DRAW
-               
+        
     def getPiece(self,row,col) -> Piece:
         return self.board[row][col]
 
@@ -136,7 +148,7 @@ class ChessBoard():
         print(f"Rei branco:{self.white_king_pos.getRow()} {self.white_king_pos.getCol()}")
         print(f"Rei preto:{self.black_king_pos.getRow()} {self.black_king_pos.getCol()}") 
         
-    def makeMove(self, move : Move):
+    def makeMove(self, move : Move):       
         self.getPiece(Position(move.startRow, move.startCol)).attPosition( Position(move.endRow, move.endCol))
         self.board[move.startRow][move.startCol] = Empty(Position(move.startRow, move.startCol))
         self.board[move.endRow][move.endCol] = move.pieceMoved
@@ -144,6 +156,27 @@ class ChessBoard():
         self.isWhiteTurn = not self.isWhiteTurn 
         self.moveMade = True
         print(move.getChessNotation() )
+        #promovendo o peao
+        if move.isPawnPromotion:
+            self.board[move.endRow][move.endCol] = Queen( Position(move.endRow, move.endCol) , move.pieceMoved.getColor() )  
+        
+        if move.isEnPassantMove:
+            self.board[move.startRow][move.endCol] = Empty(Position(move.startRow, move.endCol))
+        
+        self.isenpassantAvaliable = False
+        #enpassant:
+        if(move.pieceMoved.getType() == PAWN):
+            #black
+            if(move.pieceMoved.getColor() == BLACKn and move.startRow == 1 and move.endRow == 3):
+                self.enpassantPossible = Position(move.endRow -1, move.endCol)
+                self.isenpassantAvaliable = True
+                print(f"ENPASSANT DISPONIVEL {move.endRow-1} {move.endCol}")
+            #white
+            elif(move.pieceMoved.getColor() == WHITEn and move.startRow == 6 and move.endRow == 4):
+                self.enpassantPossible = Position(move.endRow +1, move.endCol)
+                self.isenpassantAvaliable = True
+                print(f"ENPASSANT DISPONIVEL {move.endRow+1} {move.endCol}")
+        
         #muda a posicao do rei
         if(self.board[move.endRow][move.endCol].getType() == KING ):
             if (self.board[move.endRow][move.endCol].getColor() == BLACKn):
@@ -168,6 +201,21 @@ class ChessBoard():
             self.board[lastmove.endRow][lastmove.endCol].attPosition( Position(lastmove.endRow, lastmove.endCol))
             self.isWhiteTurn = not self.isWhiteTurn 
             self.moveMade = True
+            #undo enpassant move:
+            
+            
+            
+            if lastmove.isEnPassantMove:
+                self.board[lastmove.endRow][lastmove.endCol] = Empty(Position(lastmove.endRow, lastmove.endCol))
+                self.board[lastmove.startRow][lastmove.endCol] = lastmove.pieceCaptured
+                self.board[lastmove.startRow][lastmove.endCol].attPosition( Position(lastmove.startRow, lastmove.endCol))
+                self.enpassantPossible = Position(lastmove.endRow, lastmove.endCol)
+                self.isenpassantAvaliable = True
+            
+            #undo pawn advanced moves
+            if lastmove.pieceMoved.getType == PAWN and abs(lastmove.startRow - lastmove.endRow) == 2:
+                self.isenpassantAvaliable = False
+                
             if(self.board[lastmove.endRow][lastmove.endCol].getType() == KING ):
                 if (self.board[lastmove.endRow][lastmove.endCol].getColor() == BLACKn):
                     self.black_king_pos = Position(lastmove.endRow, lastmove.endCol)
@@ -181,7 +229,9 @@ class ChessBoard():
                     
                 elif (self.board[lastmove.startRow][lastmove.startCol].getColor() == WHITEn):
                     self.white_king_pos = Position(lastmove.startRow, lastmove.startCol)
-        
+
+            
+            
             self.checkMate = False
             self.stalteMate = False
 
@@ -190,15 +240,22 @@ class ChessBoard():
             
     def movePiece(self, from_ : Position , to : Position):
         if( self.isValidMove( Move(from_,to, self.board  )) == True ):
-            self.makeMove(Move(from_, to, self.board))
+            print(" o movimento eh meu")
+            move = Move(from_,to,self.board)
+            for i in range ( len(self.validmoves)):
+                if self.validmoves[i].isEnPassantMove == True:
+                    if move == self.validmoves[i]:
+                        move = Move(from_,to,self.board, isenpassant=True)
+            self.makeMove(move)
             #self.getPiece(from_).attPosition(to)
             #self.board[to.getRow()][to.getCol()] = self.board[from_.getRow()][from_.getCol()]
             #self.board[from_.getRow()][from_.getCol()] = Empty(from_)                
     
 #Considerando o xeque
     def isValidMove(self, move : Move):
-        if move in self.validmoves:
-            return True
+        for i in range ( len(self.validmoves)):
+            if move == self.validmoves[i]:
+                return True
         return False
 
 #SEM considerar o xeque
@@ -210,7 +267,7 @@ class ChessBoard():
         if( self.getPiece(from_).getType() == KNIGHT  ):
             return self.getPiece(from_).IsValidMove(to)
         
-        #peao
+        #peao - com en passant
         if( self.getPiece(from_).getType() == PAWN ):
             return self.getPiece(from_).IsValidMove(to, self.getPiece(to).getColor())
         
@@ -270,6 +327,8 @@ class ChessBoard():
 
 #TODOS Movimentos considerando o xeque
     def getValidMoves(self):
+        tempEnPassant = self.enpassantPossible
+        tempAvaliable = self.isenpassantAvaliable
         # 1) Generate all the possibles moves
         moves = self.getAllMoves()
         # 2) For each move, make the move
@@ -292,6 +351,9 @@ class ChessBoard():
         else:
             self.checkMate = False
             self.stalteMate = False
+
+        self.enpassantPossible = tempEnPassant
+        self.isenpassantAvaliable = tempAvaliable
         return moves
     
     #determina se o jogador atual esta em xeque 
@@ -345,6 +407,8 @@ class ChessBoard():
                     if ( piece.getType() == PAWN):
                         prow = [-1,-2,1,2]
                         pcol = [0,1,-1]
+                            
+                        
                         for dr in prow:
                             for dc in pcol:
                                 if dr == 0 and dc == 0:
@@ -354,11 +418,16 @@ class ChessBoard():
                                 
                                 if ( dest.getCol() < 0 or dest.getCol() > 7):
                                     continue
-                                elif ( dest.getRow() < 0 or dest.getRow() > 7):
+                                if ( dest.getRow() < 0 or dest.getRow() > 7):
                                     continue                    
-
+                                #considering the enpassant
+                                if self.isenpassantAvaliable and (dest.getRow() == self.enpassantPossible.getRow() and \
+                                    dest.getCol() == self.enpassantPossible.getCol()):
+                                    if (self.isWhiteTurn == True) and (piece.getColor() == WHITEn):
+                                        moves.append(Move(pos, dest, self.board , isenpassant=True))
+                                    elif (self.isWhiteTurn == False) and (piece.getColor() == BLACKn):
+                                        moves.append(Move(pos, dest, self.board , isenpassant=True))
                                 if self.isPossibleMove(pos,dest) == True:
-                                    print(dest.getRow(),"---",dest.getCol())                    
                                     moves.append(Move(pos, dest, self.board ))
 
                     if piece.getType() == BISHOP:
@@ -444,5 +513,4 @@ class ChessBoard():
                                 cur_col += dc
         return moves                      
                         
-                        
-#USING NAIVE ALG.:
+                    
