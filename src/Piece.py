@@ -3,10 +3,11 @@ from abc import ABC, abstractmethod
 from .Position import *
 
 class Piece(ABC):
-    def __init__(self, Position, color, type) -> None:
+    def __init__(self, Position, color, type, num=0) -> None:
         self.position = Position
         self.color = color
         self.type = type
+        self.numofmoves = num
     
     def attPosition(self, pos : Position):
         self.position.setPosition(pos)
