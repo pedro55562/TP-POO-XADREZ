@@ -26,6 +26,11 @@ while graphicboard.getShouldclose() == False:
             
     from_ = graphicboard.HandleMouseInput()
     
+    
+    # tirar essa gambiarra
+    # referente a parte interna de diferentes valores de retorno em HandleMouseInput
+    # para diferentes tipos de eventos
+    # talvez tranformar handlemouseinput em um lidador de eventos em gerais!
     if from_ == -1:
         break
     elif from_ ==-2:

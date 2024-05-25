@@ -220,7 +220,13 @@ class ChessBoard():
             print(f"{i+1}) {self.move_log[i].getChessNotation()  }")
             
             
-            
+# Todo: Refatorar o codigo:
+# procurar um metodo mais simples p/ dar update nos CastlingRights
+# preferencialmente sem considerar numofmoves de cada piece ( atribute deve ser removido a posteriori)
+# obs: deve-se considerar que os metodos makemove e undomove sao chamados varias vezes
+#       e eles chamam updateCastlingRights, portanto eles afetam diretamente CastlingRights
+#       o alterando apenas para uma verificação temporaria
+# --> ao chamar makemove e depois dar undomove o CastlingRights deve ser o mesmo antes do chamado de makemove
     def updateCastlingRights(self):
         # Positions to check: (row, col) format
         rows = [0,7]
@@ -500,22 +506,10 @@ class ChessBoard():
                     pos = Position(row,col)
                     
                     if ( piece.getType() == KING):
-                        kdir = [0, 1, -1]
-                        for dr in kdir:
-                            for dc in kdir:
-                                if dr == 0 and dc == 0:
-                                    continue
-                                
-                                dest = Position(pos.getRow() + dr , pos.getCol() + dc)
-                                
-                                if ( dest.getCol() < 0 or dest.getCol() > 7):
-                                    continue
-                                elif ( dest.getRow() < 0 or dest.getRow() > 7):
-                                    continue                    
+                        moves.extend(self.getKingMoves(pos))
 
-                                if self.isPossibleMove(pos,dest) == True:
-                                    moves.append(Move(pos, dest, self.board ))
-
+                    #Todo: modularizacao ( implementar separadamente getPawnMoves )
+                    # bugs significativos foram encontrados em relacao ao en passant
                     if ( piece.getType() == PAWN):
                         prow = [-1,-2,1,2]
                         pcol = [0,1,-1]
@@ -544,86 +538,130 @@ class ChessBoard():
                                     moves.append(Move(pos, dest, self.board ))
 
                     if piece.getType() == BISHOP:
-                        dir1 = [1, -1]
-                        dir2 = [1, -1]
+                        moves.extend(self.getBishopMoves(pos))
+
                         
-                        for dr in dir1:
-                            for dc in dir2:
-                                crow, ccol = pos.getRow() + dr, pos.getCol() + dc
-                                while 0 <= crow < 8 and 0 <= ccol < 8:
-                                    dest = Position(crow, ccol)
-
-                                    if self.isPossibleMove(pos, dest):
-                                        moves.append(Move(pos, dest, self.board ))
-
-                                    crow += dr
-                                    ccol += dc
-
                     if piece.getType() == QUEEN:
-                        dir_row = [1, -1, 0, 0]
-                        dir_col = [0, 0, 1, -1]
-                        for dr in dir_row:
-                            cur_row = pos.getRow() + dr
-                            while 0 <= cur_row < 8:
-                                dest = Position(cur_row, pos.getCol())
-                                if self.isPossibleMove(pos, dest):
-                                    moves.append(Move(pos, dest, self.board ))
-                                else:
-                                    break
-                                cur_row += dr
+                        moves.extend(self.getQueenMoves(pos))
 
-                        for dc in dir_col:
-                            cur_col = pos.getCol() + dc
-                            while 0 <= cur_col < 8:
-                                dest = Position(pos.getRow(), cur_col)
-                                if self.isPossibleMove(pos, dest):
-                                    moves.append(Move(pos, dest, self.board ))
-                                else:
-                                    break
-                                cur_col += dc
-
-                        dir_diag = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
-                        for dr, dc in dir_diag:
-                            cur_row, cur_col = pos.getRow() + dr, pos.getCol() + dc
-                            while 0 <= cur_row < 8 and 0 <= cur_col < 8:
-                                dest = Position(cur_row, cur_col)
-                                if self.isPossibleMove(pos, dest):
-                                    moves.append(Move(pos, dest, self.board ))
-                                else:
-                                    break
-                                cur_row += dr
-                                cur_col += dc
 
                     if piece.getType() == KNIGHT:
-                        valid_moves = [(-1, 2), (-1, -2), (1, 2), (1, -2), (-2, 1), (-2, -1), (2, 1), (2, -1)]
-                        for dr, dc in valid_moves:
-                            dest = Position(pos.getRow() + dr, pos.getCol() + dc)
-                            if 0 <= dest.getRow() < 8 and 0 <= dest.getCol() < 8:
-                                if self.isPossibleMove(pos, dest) and self.getPiece(dest).getColor() != piece.getColor():
-                                    moves.append(Move(pos, dest, self.board ))
+                        moves.extend(self.getKnightMoves(pos))
 
                     if piece.getType() == ROOK:
-                        dir_row = [1, -1]
-                        dir_col = [1, -1]
-                        for dr in dir_row:
-                            cur_row = pos.getRow() + dr
-                            while 0 <= cur_row < 8:
-                                dest = Position(cur_row, pos.getCol())
-                                if self.isPossibleMove(pos, dest) and self.getPiece(dest).getColor() != piece.getColor():
-                                    moves.append(Move(pos, dest, self.board ))
-                                else:
-                                    break
-                                cur_row += dr
+                        moves.extend(self.getRookMoves(pos))
 
-                        for dc in dir_col:
-                            cur_col = pos.getCol() + dc
-                            while 0 <= cur_col < 8:
-                                dest = Position(pos.getRow(), cur_col)
-                                if self.isPossibleMove(pos, dest) and self.getPiece(dest).getColor() != piece.getColor():
-                                    moves.append(Move(pos, dest, self.board ))
-                                else:
-                                    break
-                                cur_col += dc
         return moves                      
-                        
-                    
+    
+    def getKingMoves(self,start):
+        kdir = [0, 1, -1]
+        moves = []
+        for dr in kdir:
+            for dc in kdir:
+                if dr == 0 and dc == 0:
+                    continue     
+                dest = Position(start.getRow() + dr , start.getCol() + dc)       
+                if ( dest.getCol() < 0 or dest.getCol() > 7):
+                    continue
+                elif ( dest.getRow() < 0 or dest.getRow() > 7):
+                    continue                    
+                if self.isPossibleMove(start,dest) == True:
+                    moves.append(Move(start, dest, self.board ))
+        return moves
+     
+#Todo:
+# ao tentar implementar encontrei bugs fundamentais envolvendo o enpassant        
+# como não eh essencial, deixei para depois
+# alem disso o enpassant ja havia apresentado bugs( menos relevantes ) após a chamada de undomove
+    def getPawnMoves(self,pos):
+        pass
+
+    def getBishopMoves(self,start):
+        dir1 = [1, -1]
+        dir2 = [1, -1]
+        moves = []
+        for dr in dir1:
+            for dc in dir2:
+                crow, ccol = start.getRow() + dr, start.getCol() + dc
+                while 0 <= crow < 8 and 0 <= ccol < 8:
+                    dest = Position(crow, ccol)
+                    if self.isPossibleMove(start, dest):
+                        moves.append(Move(start, dest, self.board ))
+                    crow += dr
+                    ccol += dc    
+        return moves
+    
+    def getQueenMoves(self,start):
+        moves = []
+        dir_row = [1, -1, 0, 0]
+        dir_col = [0, 0, 1, -1]
+        for dr in dir_row:
+            cur_row = start.getRow() + dr
+            while 0 <= cur_row < 8:
+                dest = Position(cur_row, start.getCol())
+                if self.isPossibleMove(start, dest):
+                    moves.append(Move(start, dest, self.board ))
+                else:
+                    break
+                cur_row += dr
+
+        for dc in dir_col:
+            cur_col = start.getCol() + dc
+            while 0 <= cur_col < 8:
+                dest = Position(start.getRow(), cur_col)
+                if self.isPossibleMove(start, dest):
+                    moves.append(Move(start, dest, self.board ))
+                else:
+                    break
+                cur_col += dc
+
+        dir_diag = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
+        for dr, dc in dir_diag:
+            cur_row, cur_col = start.getRow() + dr, start.getCol() + dc
+            while 0 <= cur_row < 8 and 0 <= cur_col < 8:
+                dest = Position(cur_row, cur_col)
+                if self.isPossibleMove(start, dest):
+                    moves.append(Move(start, dest, self.board ))
+                else:
+                    break
+                cur_row += dr
+                cur_col += dc                      
+        return moves
+                
+    def getKnightMoves(self,start : Position):
+        moves = []
+        valid_moves = [(-1, 2), (-1, -2), (1, 2), (1, -2), (-2, 1), (-2, -1), (2, 1), (2, -1)]
+        for dr, dc in valid_moves:
+            dest = Position(start.getRow() + dr, start.getCol() + dc)
+            if 0 <= dest.getRow() < 8 and 0 <= dest.getCol() < 8:
+                piece = self.board[dest.getRow()][dest.getCol()]
+                if self.isPossibleMove(start, dest):
+                    moves.append(Move(start, dest, self.board ))
+        return moves
+            
+    def getRookMoves(self,start):
+        dir_row = [1, -1]
+        dir_col = [1, -1]
+        moves = []
+        for dr in dir_row:
+            cur_row = start.getRow() + dr
+            while 0 <= cur_row < 8:
+                dest = Position(cur_row, start.getCol())
+                piece = self.board[dest.getRow()][dest.getCol()]
+                if self.isPossibleMove(start, dest):
+                    moves.append(Move(start, dest, self.board ))
+                else:
+                    break
+                cur_row += dr
+
+        for dc in dir_col:
+            cur_col = start.getCol() + dc
+            while 0 <= cur_col < 8:
+                dest = Position(start.getRow(), cur_col)
+                piece = self.board[dest.getRow()][dest.getCol()]
+                if self.isPossibleMove(start, dest):
+                    moves.append(Move(start, dest, self.board ))
+                else:
+                    break
+                cur_col += dc       
+        return moves    
