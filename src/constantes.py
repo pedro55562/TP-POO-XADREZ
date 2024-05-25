@@ -1,3 +1,6 @@
+import pygame
+
+
 #map: key : value
 ranksTOrows ={
     "1" : 7,
@@ -26,7 +29,7 @@ filesTOcols ={
 colsTOfiles ={v : k for k, v in filesTOcols.items() }
 
 
-defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq"
 
 WHITEn = 8
 BLACKn = 16
@@ -60,6 +63,11 @@ window_width = 800
 window_height = 800
 squareSize = 100
 
-dark = (161, 111, 90) 
-light = (235, 210, 184, 255)
-red_ = (230, 41, 55)
+dark = pygame.Color(161, 111, 90) 
+light = pygame.Color(235, 210, 184)
+reddd = pygame.Color(230, 41, 55)
+reddd.a = 230
+
+
+CLOSEGAME = -1
+UNDOMOVE = -2

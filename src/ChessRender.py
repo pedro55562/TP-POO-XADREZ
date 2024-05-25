@@ -25,6 +25,8 @@ class ChessRender():
         pygame.display.set_caption('Chess Game')
         self.clock = pygame.time.Clock()
         
+        self.alpha_surface = pygame.Surface((window_width, window_height), pygame.SRCALPHA)
+        
         self.isPieceSelected = False
         self.SelectedPiece = Position(-1,-1)
         self.possibleDest = []
@@ -77,26 +79,27 @@ class ChessRender():
             for move in movess:
                 pos = Position(move.endRow , move.endCol)
                 rec = pygame.Rect(pos.getCol()*squareSize, pos.getRow()*squareSize,squareSize,squareSize )
-                pygame.draw.rect(self.screen , red_, rec)
+                pygame.draw.rect(self.screen , reddd, rec)
     
     def renderPossibleDestinations(self):
-        if self.isPieceSelected == False:
-            return
-        if self.possibleDest is not None:
+        if (self.board.getMoveMade() == True) and (self.isPieceSelected == False):
+            self.alpha_surface.fill((255, 255, 255,0))
+        elif self.possibleDest is not None:
             for pos in self.possibleDest:
                 rec = pygame.Rect(pos.getCol()*squareSize, pos.getRow()*squareSize,squareSize,squareSize )
-                pygame.draw.rect(self.screen , red_, rec)
+                pygame.draw.rect(self.alpha_surface , reddd , rec)
 
     def render(self):
         self.renderBoard()
         self.renderPossibleDestinations()
         self.renderPiece()
-        pygame.display.update()
+        self.screen.blit(self.alpha_surface, (0,0))
+        pygame.display.flip()
         
     def targetFps(self):
         self.clock.tick(1)
     
-    def HandleMouseInput(self):
+    def handle_events(self):
         waiting = True
         while waiting:
             if self.getShouldclose():
@@ -104,7 +107,7 @@ class ChessRender():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.shouldclose = True
-                    return -1
+                    return CLOSEGAME
                 elif event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_focused():
                     if event.button == 1:
                         waiting = False
@@ -114,7 +117,9 @@ class ChessRender():
                             return Position( mouse_pos[1] // 100 ,mouse_pos[0] // 100   )
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_z:
+                        if self.isPieceSelected:
+                            continue
                         self.board.undoMove()
-                        return -2
+                        return UNDOMOVE
         return -1
     
