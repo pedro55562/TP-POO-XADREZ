@@ -151,6 +151,8 @@ class ChessBoard():
         self.checkMate = False
         self.stalteMate = False #  one side has NO legal moves to make and the king is not in check => DRAW
         
+        self.playermademove = False
+        
     def getPiece(self,row,col) -> Piece:
         return self.board[row][col]
 
@@ -395,7 +397,8 @@ class ChessBoard():
         if (from_ == to):
             print("EH IGUAL NÉ")
             return False     
-        if( self.isValidMove( Move(from_,to, self.board  )) == True ):
+        self.playermademove = self.isValidMove( Move(from_,to, self.board  ))
+        if( self.playermademove):
             move = Move(from_,to,self.board)
             for i in range ( len(self.validmoves)):
                 if self.validmoves[i].isEnPassantMove == True:
@@ -405,6 +408,7 @@ class ChessBoard():
                     if move == self.validmoves[i]:
                         move = Move(from_,to,self.board, isCastleMove = True)
             self.makeMove(move)
+            return self.playermademove
    
 #Considerando o xeque
     def isValidMove(self, move : Move):
