@@ -11,18 +11,18 @@
 from src import *
 
 def main():
+    fen = "r3k2r/8/8/8/8/8/8/R3K2R w KQkq"
     chessboard = ChessBoard(defaultFen)
     graphicboard = ChessRender(chessboard)
 
-    while graphicboard.getShouldclose() == False:
-
+    while graphicboard.getShouldclose() == False:        
+        chessboard.printCastlingRights()
         graphicboard.render() 
         graphicboard.setShouldclose()
         graphicboard.render()
         
         chessboard.printMoveLog()
-        chessboard.printCastlingRights()
-        
+        print("CLEAR:",chessboard.isPathSafe(Position(7,4), Position(7,7)))
         
         if(chessboard.getMoveMade() == True):
             chessboard.setNewValidmoves()

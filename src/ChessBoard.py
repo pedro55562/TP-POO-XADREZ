@@ -14,7 +14,7 @@ from .Rook import *
 from .Empty import *
 
 class Move:
-    def __init__(self, start : Position , end : Position , board , isenpassant = False ) -> None:
+    def __init__(self, start : Position , end : Position , board , isenpassant = False , isCastleMove = False ) -> None:
         # Armazenar Posiçoes...
         self.startRow = start.getRow()
         self.startCol = start.getCol()
@@ -25,10 +25,12 @@ class Move:
         self.pieceCaptured = board[self.endRow][self.endCol]
         self.moveId = self.startRow*1000 + self.startCol*100 + self.endRow*10 + self.endCol
         #Armazenar infos...
-        self.isPawnPromotion = (self.pieceMoved.getColor() == BLACKn and self.endRow == 7) or \
+        self.isPawnPromotion = self.pieceMoved.getType() == PAWN and \
+                                (self.pieceMoved.getColor() == BLACKn and self.endRow == 7) or \
                                (self.pieceMoved.getColor() == WHITEn and self.endRow == 0) 
-
+        self.isCastleMove = isCastleMove
         self.isEnPassantMove = isenpassant
+        
         if self.isEnPassantMove:
             self.pieceCaptured = board[self.startRow][self.endCol]
         
@@ -183,13 +185,13 @@ class ChessBoard():
         self.board[move.endRow][move.endCol].numofmoves += 1
         self.moveMade = True
         #promovendo o peao
-        if move.isPawnPromotion:
+        if move.isPawnPromotion and move.pieceMoved.getType() == PAWN:
             self.board[move.endRow][move.endCol] = Queen( Position(move.endRow, move.endCol) , move.pieceMoved.getColor() )  
         if move.isEnPassantMove:
             self.board[move.startRow][move.endCol] = Empty(Position(move.startRow, move.endCol))
         self.isenpassantAvaliable = False
         #enpassant:
-
+        #update enpassant rights
         if(move.pieceMoved.getType() == PAWN):
             #black
             if(move.pieceMoved.getColor() == BLACKn and move.startRow == 1 and move.endRow == 3):
@@ -200,6 +202,20 @@ class ChessBoard():
                 self.enpassantPossible = Position(move.endRow +1, move.endCol)
                 self.isenpassantAvaliable = True
        
+       #Make the castle move:
+        if (move.isCastleMove):
+            dir = move.endCol - move.startCol
+            if dir > 0: # king side castle(to the right)
+                self.board[move.endRow][5] = self.board[move.endRow][7]
+                self.board[move.endRow][5].numofmoves+=1
+                self.board[move.endRow][5].attPosition(Position(move.endRow, 5))
+                self.board[move.endRow][7] = Empty(Position(move.endRow, 7))
+            if dir < 0: # queen side caste(to the left)
+                self.board[move.endRow][3] = self.board[move.endRow][0]
+                self.board[move.endRow][3].numofmoves+=1
+                self.board[move.endRow][3].attPosition(Position(move.endRow, 3))
+                self.board[move.endRow][0] = Empty(Position(move.endRow, 0))        
+        
         #muda a posicao do rei
         if(self.board[move.endRow][move.endCol].getType() == KING ):
             if (self.board[move.endRow][move.endCol].getColor() == BLACKn):
@@ -333,7 +349,22 @@ class ChessBoard():
             #undo pawn advanced moves
             if lastmove.pieceMoved.getType == PAWN and abs(lastmove.startRow - lastmove.endRow) == 2:
                 self.isenpassantAvaliable = False
-                
+
+            #Make the castle move:
+            if (lastmove.isCastleMove):
+                dir = lastmove.endCol - lastmove.startCol
+                if dir > 0: # king side castle(to the right)
+                    self.board[lastmove.endRow][7] = self.board[lastmove.endRow][5]
+                    self.board[lastmove.endRow][7].numofmoves-=1
+                    self.board[lastmove.endRow][7].attPosition( Position(lastmove.endRow, 7) )
+                    self.board[lastmove.endRow][5] = Empty(Position(lastmove.endRow, 5))
+                if dir < 0: # queen side caste(to the left)
+                    self.board[lastmove.endRow][0] = self.board[lastmove.endRow][3]
+                    self.board[lastmove.endRow][0].numofmoves-=1
+                    self.board[lastmove.endRow][0].attPosition(Position(lastmove.endRow,0))
+                    self.board[lastmove.endRow][3] = Empty(Position(lastmove.endRow, 0))        
+
+            #update king pos                
             if(self.board[lastmove.endRow][lastmove.endCol].getType() == KING ):
                 if (self.board[lastmove.endRow][lastmove.endCol].getColor() == BLACKn):
                     self.black_king_pos = Position(lastmove.endRow, lastmove.endCol)
@@ -341,6 +372,7 @@ class ChessBoard():
                 elif (self.board[lastmove.startRow][lastmove.startCol].getColor() == WHITEn):
                     self.white_king_pos = Position(lastmove.startRow, lastmove.startCol)
  
+            #update king pos
             if(self.board[lastmove.startRow][lastmove.startCol].getType() == KING ):
                 if (self.board[lastmove.startRow][lastmove.startCol].getColor() == BLACKn):
                     self.black_king_pos = Position(lastmove.startRow, lastmove.startCol)
@@ -368,7 +400,10 @@ class ChessBoard():
             for i in range ( len(self.validmoves)):
                 if self.validmoves[i].isEnPassantMove == True:
                     if move == self.validmoves[i]:
-                        move = Move(from_,to,self.board, isenpassant=True)
+                        move = Move(from_,to,self.board, isenpassant = True)
+                if self.validmoves[i].isCastleMove == True:
+                    if move == self.validmoves[i]:
+                        move = Move(from_,to,self.board, isCastleMove = True)
             self.makeMove(move)
    
 #Considerando o xeque
@@ -472,6 +507,10 @@ class ChessBoard():
 
         self.enpassantPossible = tempEnPassant
         self.isenpassantAvaliable = tempAvaliable
+        
+        #if it's a castle move
+        moves.extend(self.getCastleMoves())
+        
         return moves
     
     #determina se o jogador atual esta em xeque 
@@ -556,6 +595,7 @@ class ChessBoard():
     def getKingMoves(self,start):
         kdir = [0, 1, -1]
         moves = []
+        allycolor = self.getPiece(start).getColor()
         for dr in kdir:
             for dc in kdir:
                 if dr == 0 and dc == 0:
@@ -566,7 +606,8 @@ class ChessBoard():
                 elif ( dest.getRow() < 0 or dest.getRow() > 7):
                     continue                    
                 if self.isPossibleMove(start,dest) == True:
-                    moves.append(Move(start, dest, self.board ))
+                    moves.append(Move(start, dest, self.board ))        
+        
         return moves
      
 #Todo:
@@ -665,3 +706,71 @@ class ChessBoard():
                     break
                 cur_col += dc       
         return moves    
+    
+    def getCastleMoves(self):
+        if self.inCheck():
+            return []
+        start = Position(7,4) if self.isWhiteTurn else Position(0,4)
+        allycolor = WHITEn if self.isWhiteTurn else BLACKn
+        
+        moves = []
+        moves.extend(self.getKingSideCastle(start ,allycolor))
+        moves.extend(self.getQueenSideCastle(start ,allycolor))        
+        
+        return moves
+    
+    def getKingSideCastle(self, start, allycolor):
+        row = start.getRow()
+        col = start.getCol()
+        moves = []
+        
+        if self.isPathClear(start, Position(row,7)) == False:
+            return []
+        if self.isPathSafe(start,Position(row,col + 3)) == False:
+            return []
+        
+        if allycolor == WHITEn and self.castlingRights.whiteKingSide == True:
+            moves.append(Move(start, Position(row, 6), self.board ,isCastleMove = True ))
+        if allycolor == BLACKn and self.castlingRights.blackKingSide == True: 
+            moves.append(Move(start, Position(row, 6), self.board ,isCastleMove = True ))
+
+
+        return moves     
+
+        
+    def getQueenSideCastle(self, start, allycolor):
+        row = start.getRow()    
+        col = start.getCol()
+        moves = []
+        
+        if self.isPathClear(start, Position(row,0)) == False:
+            return []
+        if self.isPathSafe(start,Position(row,col - 3)) == False:
+            return []
+        if allycolor == WHITEn and self.castlingRights.whiteQueenSide == True:
+            moves.append(Move(start, Position(row, 2), self.board,isCastleMove = True ))
+        if allycolor == BLACKn and self.castlingRights.blackQueenSide == True: 
+            moves.append(Move(start, Position(row, 2), self.board,isCastleMove = True ))  
+
+
+        return moves     
+    
+    #considera apenas movs. em linhas
+    def isPathSafe(self, start : Position , to : Position):
+        dr = to.getRow() - start.getRow()
+        dc = to.getCol() - start.getCol()
+        udr = 1 if dr > 0 else -1
+        udc = 1 if dc > 0 else -1
+        
+        curcol = start.getCol()
+        currow = start.getRow() 
+            
+        #mov. horizontal:
+        if( dr == 0 and dc != 0):
+            curcol+=udc
+            while(curcol != to.getCol()):
+                if( self.mySquareUnderAttack(Position(currow,curcol))):
+                    return False
+                curcol+=udc  
+        
+        return True
