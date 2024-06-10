@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 
 from .Position import *
+from interfaces import *
 
-class Piece(ABC):
+class Piece(PieceInterface, ABC):
     def __init__(self, Position, color, type, num=0) -> None:
         self.position = Position
         self.color = color

@@ -16,7 +16,9 @@ from .Queen import *
 from .Rook import *
 from .Empty import *
 
-class ChessRender():
+from interfaces import *
+
+class ChessRender(ChessRenderInterface):
     def __init__(self, board : ChessBoard) -> None:
         self.shouldclose = False
         self.board = board
@@ -43,7 +45,7 @@ class ChessRender():
     def quit(self) -> None:
         pygame.quit()
     
-    def setShouldclose(self):
+    def setShouldclose(self) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.shouldclose = True
@@ -51,7 +53,7 @@ class ChessRender():
     def getShouldclose(self):
         return self.shouldclose
         
-    def renderBoard(self):
+    def renderBoard(self) -> None:
         for row in range (0,8):
             for col in range (0,8):
                 isLight = (row + col) % 2 == 0
@@ -61,7 +63,7 @@ class ChessRender():
                 elif (isLight == False):
                     pygame.draw.rect(self.screen , dark, rec)
     
-    def renderPiece(self):
+    def renderPiece(self) -> None:
         for row in range (0,8):
             for col in range (0,8):
                 piece = self.board.getPiece(Position(row,col))
@@ -71,7 +73,7 @@ class ChessRender():
                 piece_image = pygame.transform.scale(piece_image, (squareSize, squareSize) )
                 self.screen.blit(piece_image,(col*squareSize,row*squareSize))
     
-    def renderAllMoves(self):
+    def renderAllMoves(self) -> None:
         if self.isPieceSelected == False:
             return
         movess = self.board.validmoves
@@ -81,7 +83,7 @@ class ChessRender():
                 rec = pygame.Rect(pos.getCol()*squareSize, pos.getRow()*squareSize,squareSize,squareSize )
                 pygame.draw.rect(self.screen , reddd, rec)
     
-    def renderPossibleDestinations(self):
+    def renderPossibleDestinations(self) -> None:
         if (self.board.getMoveMade() == True) and (self.isPieceSelected == False):
             self.alpha_surface.fill((255, 255, 255,0))
         elif self.possibleDest is not None:
@@ -89,14 +91,14 @@ class ChessRender():
                 rec = pygame.Rect(pos.getCol()*squareSize, pos.getRow()*squareSize,squareSize,squareSize )
                 pygame.draw.rect(self.alpha_surface , reddd , rec)
 
-    def render(self):
+    def render(self) -> None:
         self.renderBoard()
         self.renderPossibleDestinations()
         self.renderPiece()
         self.screen.blit(self.alpha_surface, (0,0))
         pygame.display.flip()
         
-    def targetFps(self):
+    def targetFps(self) -> None:
         self.clock.tick(1)
     
     def handle_events(self):
