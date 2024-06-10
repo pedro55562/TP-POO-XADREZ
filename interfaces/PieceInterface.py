@@ -16,6 +16,10 @@ class PieceInterface(ABC):
     @abstractmethod    
     def getType(self):
         pass 
+
+    @abstractmethod
+    def getPosition(self):
+        pass
     
     @abstractmethod
     def IsValidMove(self, to):

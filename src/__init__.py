@@ -10,5 +10,4 @@ from .Rook import *
 from .Empty import *
 from .ChessBoard import *
 from .ChessRender import *
-from .chessbot import *
 from .Move import *

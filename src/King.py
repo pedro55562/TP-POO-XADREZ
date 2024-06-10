@@ -6,6 +6,6 @@ class King(Piece):
         super().__init__(Position, color, KING)
         
     def IsValidMove(self, to):
-        drow = abs(to.getRow() - self.position.getRow()) 
-        dcol = abs(to.getCol() - self.position.getCol())
+        drow = abs(to.getRow() - self.getPosition().getRow()) 
+        dcol = abs(to.getCol() - self.getPosition().getCol())
         return (drow == 1) or (dcol == 1)

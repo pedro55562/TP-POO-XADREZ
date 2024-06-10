@@ -20,7 +20,7 @@ from interfaces import *
 
 class ChessRender(ChessRenderInterface):
     def __init__(self, board : ChessBoard) -> None:
-        self.shouldclose = False
+        self.__shouldclose = False
         self.board = board
         pygame.init()
         self.screen =  pygame.display.set_mode((window_width, window_height))
@@ -48,10 +48,10 @@ class ChessRender(ChessRenderInterface):
     def setShouldclose(self) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.shouldclose = True
+                self.__shouldclose = True
     
     def getShouldclose(self):
-        return self.shouldclose
+        return self.__shouldclose
         
     def renderBoard(self) -> None:
         for row in range (0,8):
@@ -108,7 +108,7 @@ class ChessRender(ChessRenderInterface):
                 return -1
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.shouldclose = True
+                    self.__shouldclose = True
                     return CLOSEGAME
                 elif event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_focused():
                     if event.button == 1:

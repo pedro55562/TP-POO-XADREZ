@@ -6,21 +6,21 @@ class Pawn(Piece):
         super().__init__(Position, color, PAWN)
         
     def IsValidMove(self, to, toColor):
-        drow = to.getRow() - self.position.getRow() 
-        dcol = to.getCol() - self.position.getCol()
+        drow = to.getRow() - self.getPosition().getRow() 
+        dcol = to.getCol() - self.getPosition().getCol()
         
         if dcol == 0 and toColor == EMPTY:
             
             if self.getColor() == BLACKn:
-                if self.position.getRow() == 1:
+                if self.getPosition().getRow() == 1:
                     return drow == 1 or drow == 2
-                elif self.position.getRow() != 1:
+                elif self.getPosition().getRow() != 1:
                     return drow == 1
             
             if self.getColor() == WHITEn:
-                if self.position.getRow() == 6:
+                if self.getPosition().getRow() == 6:
                     return drow == -1 or drow == -2
-                elif self.position.getRow() != 6:
+                elif self.getPosition().getRow() != 6:
                     return drow == -1
         
         if toColor != EMPTY and abs(dcol) == 1:

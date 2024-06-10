@@ -7,6 +7,6 @@ class Bishop(Piece):
         super().__init__(Position, color, BISHOP)
         
     def IsValidMove(self, to):
-        drow = abs(to.getRow() - self.position.getRow()) 
-        dcol = abs(to.getCol() - self.position.getCol())
+        drow = abs(to.getRow() - self.getPosition().getRow()) 
+        dcol = abs(to.getCol() - self.getPosition().getCol())
         return drow == dcol
