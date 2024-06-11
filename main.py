@@ -15,7 +15,6 @@ def main():
     graphicboard = ChessRender(chessboard)
 
     while graphicboard.getShouldclose() == False:        
-        chessboard.printCastlingRights()
         graphicboard.render() 
         graphicboard.setShouldclose()
         graphicboard.render()

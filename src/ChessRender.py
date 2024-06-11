@@ -38,7 +38,7 @@ class ChessRender(ChessRenderInterface):
 
     def updateSelectedPiece(self, pos : Position):
         self.__SelectedPiece = pos
-        self.__isPieceSelected = not(self.isPieceSelected)
+        self.__isPieceSelected = not(self.__isPieceSelected)
         if self.__isPieceSelected:
             self.__possibleDest = self.__board.getMoves(self.__SelectedPiece)
         
