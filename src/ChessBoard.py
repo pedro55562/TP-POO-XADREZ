@@ -144,7 +144,7 @@ class ChessBoard(ChessBoardInterface):
         print(f"Rei branco:{self.__white_king_pos.getRow()} {self.__white_king_pos.getCol()}")
         print(f"Rei preto:{self.__black_king_pos.getRow()} {self.__black_king_pos.getCol()}") 
         
-    def makeMove(self, move : Move): 
+    def __makeMove(self, move : Move): 
         self.getPiece(Position(move.startRow, move.startCol)).attPosition( Position(move.endRow, move.endCol))
         self.__board[move.startRow][move.startCol] = Empty(Position(move.startRow, move.startCol))
         self.__board[move.endRow][move.endCol] = move.pieceMoved
@@ -203,14 +203,6 @@ class ChessBoard(ChessBoardInterface):
         for i in range( len(self.__move_log)):
             print(f"{i+1}) {self.__move_log[i].getChessNotation()  }")
             
-            
-# Todo: Refatorar o codigo:
-# procurar um metodo mais simples p/ dar update nos CastlingRights
-# preferencialmente sem considerar numofmoves de cada piece ( atribute deve ser removido a posteriori)
-# obs: deve-se considerar que os metodos makemove e undomove sao chamados varias vezes
-#       e eles chamam updateCastlingRights, portanto eles afetam diretamente CastlingRights
-#       o alterando apenas para uma verificação temporaria
-# --> ao chamar makemove e depois dar undomove o CastlingRights deve ser o mesmo antes do chamado de makemove
     def updateCastlingRights(self):
         # Positions to check: (row, col) format
         rows = [0,7]
@@ -293,7 +285,7 @@ class ChessBoard(ChessBoardInterface):
             return True
         return False
           
-    def undoMove(self):
+    def __undoMove(self):
         if len(self.__move_log) != 0:
             lastmove = self.__move_log.pop()
             if lastmove.startRow == lastmove.endRow and lastmove.startCol == lastmove.endCol:
@@ -373,7 +365,7 @@ class ChessBoard(ChessBoardInterface):
                 if self.validmoves[i].isCastleMove == True:
                     if move == self.validmoves[i]:
                         move = Move(from_,to,self.__board, isCastleMove = True)
-            self.makeMove(move)
+            self.__makeMove(move)
             return self.playermademove
    
 #Considerando o xeque
@@ -384,7 +376,7 @@ class ChessBoard(ChessBoardInterface):
         return False
 
 #SEM considerar o xeque
-    def isPossibleMove(self, from_ : Position , to : Position):
+    def __isPossibleMove(self, from_ : Position , to : Position):
         if(self.getPiece(to).getColor() == self.getPiece(from_).getColor()):
             return False
         
@@ -392,7 +384,7 @@ class ChessBoard(ChessBoardInterface):
         if( self.getPiece(from_).getType() == KNIGHT  ):
             return self.getPiece(from_).IsValidMove(to)
         #restante
-        isclear = self.isPathClear(from_, to)
+        isclear = self.__isPathClear(from_, to)
         
         #peao - com en passant
         if( self.getPiece(from_).getType() == PAWN ):
@@ -402,7 +394,7 @@ class ChessBoard(ChessBoardInterface):
         
         return valid and isclear
 
-    def isPathClear(self, start : Position , to : Position):
+    def __isPathClear(self, start : Position , to : Position):
         dr = to.getRow() - start.getRow()
         dc = to.getCol() - start.getCol()
         udr = 1 if dr > 0 else -1
@@ -453,21 +445,21 @@ class ChessBoard(ChessBoardInterface):
         tempEnPassant = self.__enpassantPossible
         tempAvaliable = self.__isenpassantAvaliable
         # 1) Generate all the possibles moves
-        moves = self.getAllMoves()
+        moves = self.__getAllMoves()
         # 2) For each move, make the move
         for i in range(len(moves) - 1 , -1 , -1): # por estar removendo da lista, comece por tras
-            self.makeMove( moves[i] )
+            self.__makeMove( moves[i] )
             self.isWhiteTurn = not self.isWhiteTurn #destrocar os turnos porque make move o trocou
             # 3) Generate all opponent's moves 
             # 4) for each of your opponent's moves, see if they atack your king
-            if self.inCheck():
+            if self.__inCheck():
                 # 5) if they do atack your king, it's not valid
                 moves.remove(moves[i])
             self.isWhiteTurn = not self.isWhiteTurn        
-            self.undoMove()
+            self.__undoMove()
         
         if ( len(moves) == 0): #Check mate or stalemate
-            if self.inCheck():
+            if self.__inCheck():
                 self.checkMate = True
             else:
                 self.stalteMate = True
@@ -484,18 +476,18 @@ class ChessBoard(ChessBoardInterface):
         return moves
     
     #determina se o jogador atual esta em xeque 
-    def inCheck(self):
+    def __inCheck(self):
         if self.isWhiteTurn:
-            return self.mySquareUnderAttack(self.__white_king_pos)
+            return self.__mySquareUnderAttack(self.__white_king_pos)
         else:
-            return self.mySquareUnderAttack(self.__black_king_pos)
+            return self.__mySquareUnderAttack(self.__black_king_pos)
     
     #verifica se o OPONENTE ataca um quadrado especifico - considera getAllMoves
-    def mySquareUnderAttack(self, square : Position):
+    def __mySquareUnderAttack(self, square : Position):
         #switch to opponent's side of view, because i wanna see their moves
         self.isWhiteTurn = not self.isWhiteTurn
         #generate all of my opponent's moves
-        oppmoves = self.getAllMoves()
+        oppmoves = self.__getAllMoves()
         #verify if any of their moves attack my square
         for moves in oppmoves:
             if moves.endRow == square.getRow() and moves.endCol == square.getCol():
@@ -505,7 +497,7 @@ class ChessBoard(ChessBoardInterface):
         return False
    
 #TODOS Movimentos SEM considerar o xeque
-    def getAllMoves(self):
+    def __getAllMoves(self):
         moves = []
         for row in range ( len(self.__board)):
             for col in range (len(self.__board[row])):
@@ -543,7 +535,7 @@ class ChessBoard(ChessBoardInterface):
                                             moves.append(Move(pos, dest, self.__board , isenpassant=True))
                                         elif (self.isWhiteTurn == False) and (piece.getColor() == BLACKn):
                                             moves.append(Move(pos, dest, self.__board , isenpassant=True))
-                                if self.isPossibleMove(pos,dest) == True:
+                                if self.__isPossibleMove(pos,dest) == True:
                                     moves.append(Move(pos, dest, self.__board ))
 
                     if piece.getType() == BISHOP:
@@ -575,18 +567,11 @@ class ChessBoard(ChessBoardInterface):
                     continue
                 elif ( dest.getRow() < 0 or dest.getRow() > 7):
                     continue                    
-                if self.isPossibleMove(start,dest) == True:
+                if self.__isPossibleMove(start,dest) == True:
                     moves.append(Move(start, dest, self.__board ))        
         
         return moves
      
-#Todo:
-# ao tentar implementar encontrei bugs fundamentais envolvendo o enpassant        
-# como não eh essencial, deixei para depois
-# alem disso o enpassant ja havia apresentado bugs( menos relevantes ) após a chamada de undomove
-    def getPawnMoves(self,pos):
-        pass
-
     def getBishopMoves(self,start):
         dir1 = [1, -1]
         dir2 = [1, -1]
@@ -596,7 +581,7 @@ class ChessBoard(ChessBoardInterface):
                 crow, ccol = start.getRow() + dr, start.getCol() + dc
                 while 0 <= crow < 8 and 0 <= ccol < 8:
                     dest = Position(crow, ccol)
-                    if self.isPossibleMove(start, dest):
+                    if self.__isPossibleMove(start, dest):
                         moves.append(Move(start, dest, self.__board ))
                     crow += dr
                     ccol += dc    
@@ -610,7 +595,7 @@ class ChessBoard(ChessBoardInterface):
             cur_row = start.getRow() + dr
             while 0 <= cur_row < 8:
                 dest = Position(cur_row, start.getCol())
-                if self.isPossibleMove(start, dest):
+                if self.__isPossibleMove(start, dest):
                     moves.append(Move(start, dest, self.__board ))
                 else:
                     break
@@ -620,7 +605,7 @@ class ChessBoard(ChessBoardInterface):
             cur_col = start.getCol() + dc
             while 0 <= cur_col < 8:
                 dest = Position(start.getRow(), cur_col)
-                if self.isPossibleMove(start, dest):
+                if self.__isPossibleMove(start, dest):
                     moves.append(Move(start, dest, self.__board ))
                 else:
                     break
@@ -631,7 +616,7 @@ class ChessBoard(ChessBoardInterface):
             cur_row, cur_col = start.getRow() + dr, start.getCol() + dc
             while 0 <= cur_row < 8 and 0 <= cur_col < 8:
                 dest = Position(cur_row, cur_col)
-                if self.isPossibleMove(start, dest):
+                if self.__isPossibleMove(start, dest):
                     moves.append(Move(start, dest, self.__board ))
                 else:
                     break
@@ -646,7 +631,7 @@ class ChessBoard(ChessBoardInterface):
             dest = Position(start.getRow() + dr, start.getCol() + dc)
             if 0 <= dest.getRow() < 8 and 0 <= dest.getCol() < 8:
                 piece = self.__board[dest.getRow()][dest.getCol()]
-                if self.isPossibleMove(start, dest):
+                if self.__isPossibleMove(start, dest):
                     moves.append(Move(start, dest, self.__board ))
         return moves
             
@@ -659,7 +644,7 @@ class ChessBoard(ChessBoardInterface):
             while 0 <= cur_row < 8:
                 dest = Position(cur_row, start.getCol())
                 piece = self.__board[dest.getRow()][dest.getCol()]
-                if self.isPossibleMove(start, dest):
+                if self.__isPossibleMove(start, dest):
                     moves.append(Move(start, dest, self.__board ))
                 else:
                     break
@@ -670,7 +655,7 @@ class ChessBoard(ChessBoardInterface):
             while 0 <= cur_col < 8:
                 dest = Position(start.getRow(), cur_col)
                 piece = self.__board[dest.getRow()][dest.getCol()]
-                if self.isPossibleMove(start, dest):
+                if self.__isPossibleMove(start, dest):
                     moves.append(Move(start, dest, self.__board ))
                 else:
                     break
@@ -678,7 +663,7 @@ class ChessBoard(ChessBoardInterface):
         return moves    
     
     def getCastleMoves(self):
-        if self.inCheck():
+        if self.__inCheck():
             return []
         start = Position(7,4) if self.isWhiteTurn else Position(0,4)
         allycolor = WHITEn if self.isWhiteTurn else BLACKn
@@ -694,9 +679,9 @@ class ChessBoard(ChessBoardInterface):
         col = start.getCol()
         moves = []
         
-        if self.isPathClear(start, Position(row,7)) == False:
+        if self.__isPathClear(start, Position(row,7)) == False:
             return []
-        if self.isPathSafe(start,Position(row,col + 3)) == False:
+        if self.__isPathSafe(start,Position(row,col + 3)) == False:
             return []
         
         if allycolor == WHITEn and self.castlingRights.whiteKingSide == True:
@@ -706,16 +691,15 @@ class ChessBoard(ChessBoardInterface):
 
 
         return moves     
-
         
     def getQueenSideCastle(self, start, allycolor):
         row = start.getRow()    
         col = start.getCol()
         moves = []
         
-        if self.isPathClear(start, Position(row,0)) == False:
+        if self.__isPathClear(start, Position(row,0)) == False:
             return []
-        if self.isPathSafe(start,Position(row,col - 3)) == False:
+        if self.__isPathSafe(start,Position(row,col - 3)) == False:
             return []
         if allycolor == WHITEn and self.castlingRights.whiteQueenSide == True:
             moves.append(Move(start, Position(row, 2), self.__board,isCastleMove = True ))
@@ -726,7 +710,7 @@ class ChessBoard(ChessBoardInterface):
         return moves     
     
     #considera apenas movs. em linhas
-    def isPathSafe(self, start : Position , to : Position):
+    def __isPathSafe(self, start : Position , to : Position):
         dr = to.getRow() - start.getRow()
         dc = to.getCol() - start.getCol()
         udr = 1 if dr > 0 else -1
@@ -739,7 +723,7 @@ class ChessBoard(ChessBoardInterface):
         if( dr == 0 and dc != 0):
             curcol+=udc
             while(curcol != to.getCol()):
-                if( self.mySquareUnderAttack(Position(currow,curcol))):
+                if( self.__mySquareUnderAttack(Position(currow,curcol))):
                     return False
                 curcol+=udc  
         

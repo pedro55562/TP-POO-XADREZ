@@ -11,7 +11,6 @@
 from src import *
 
 def main():
-    fen = "r3k2r/8/8/8/8/8/8/R3K2R w KQkq"
     chessboard = ChessBoard(defaultFen)
     graphicboard = ChessRender(chessboard)
 
@@ -22,7 +21,6 @@ def main():
         graphicboard.render()
         
         chessboard.printMoveLog()
-        print("CLEAR:",chessboard.isPathSafe(Position(7,4), Position(7,7)))
         
         if(chessboard.getMoveMade() == True):
             chessboard.setNewValidmoves()
@@ -54,7 +52,7 @@ def main():
         
         
     graphicboard.quit()
-    print("JOGO FECHADO COM SUCESSO")
+    print("JOGO FECHADO")
 
 if __name__ == "__main__":
     main()

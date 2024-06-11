@@ -6,7 +6,11 @@ class ChessRenderInterface(ABC):
     @abstractmethod  
     def getSelectedPiecePos(self) -> Position:
         pass 
-        
+    
+    @abstractmethod  
+    def updateSelectedPiece(self, pos : Position) -> None:
+        pass 
+            
     @abstractmethod  
     def quit(self) -> None:
         pass 

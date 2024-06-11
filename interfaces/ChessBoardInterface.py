@@ -4,14 +4,6 @@ from src.Move import *
 from typing import List
 
 class ChessBoardInterface(ABC):
-        
-    @abstractmethod    
-    def makeMove(self, move : Move):
-        pass
-
-    @abstractmethod      
-    def undoMove(self):
-        pass
     
     @abstractmethod 
     def movePiece(self, from_ : Position , to : Position):
