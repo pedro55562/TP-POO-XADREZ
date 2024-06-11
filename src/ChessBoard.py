@@ -285,7 +285,7 @@ class ChessBoard(ChessBoardInterface):
             return True
         return False
           
-    def __undoMove(self):
+    def undoMove(self):
         if len(self.__move_log) != 0:
             lastmove = self.__move_log.pop()
             if lastmove.startRow == lastmove.endRow and lastmove.startCol == lastmove.endCol:
@@ -456,7 +456,7 @@ class ChessBoard(ChessBoardInterface):
                 # 5) if they do atack your king, it's not valid
                 moves.remove(moves[i])
             self.isWhiteTurn = not self.isWhiteTurn        
-            self.__undoMove()
+            self.undoMove()
         
         if ( len(moves) == 0): #Check mate or stalemate
             if self.__inCheck():
