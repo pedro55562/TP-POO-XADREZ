@@ -509,8 +509,6 @@ class ChessBoard(ChessBoardInterface):
                     if ( piece.getType() == KING):
                         moves.extend(self.getKingMoves(pos))
 
-                    #Todo: modularizacao ( implementar separadamente getPawnMoves )
-                    # bugs significativos foram encontrados em relacao ao en passant
                     if ( piece.getType() == PAWN):
                         prow = [-1,-2,1,2]
                         pcol = [0,1,-1]
@@ -527,7 +525,6 @@ class ChessBoard(ChessBoardInterface):
                                     continue
                                 if ( dest.getRow() < 0 or dest.getRow() > 7):
                                     continue                    
-                                #considering the enpassant
                                 if self.__isenpassantAvaliable and (dest.getRow() == self.__enpassantPossible.getRow() and \
                                     dest.getCol() == self.__enpassantPossible.getCol()):
                                     if abs(dr) == 1 and (abs(dc) == 1 or dc == 0):
@@ -709,7 +706,6 @@ class ChessBoard(ChessBoardInterface):
 
         return moves     
     
-    #considera apenas movs. em linhas
     def __isPathSafe(self, start : Position , to : Position):
         dr = to.getRow() - start.getRow()
         dc = to.getCol() - start.getCol()
@@ -719,7 +715,6 @@ class ChessBoard(ChessBoardInterface):
         curcol = start.getCol()
         currow = start.getRow() 
             
-        #mov. horizontal:
         if( dr == 0 and dc != 0):
             curcol+=udc
             while(curcol != to.getCol()):
