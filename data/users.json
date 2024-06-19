@@ -10,5 +10,13 @@
     {
         "name": "philipe",
         "passwordHash": "1cfafff6d51a03662b85b93dc3417f51687034ba9a46682f5328257eff7133ed"
+    },
+    {
+        "name": "k",
+        "passwordHash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
+    },
+    {
+        "name": "kkk",
+        "passwordHash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
     }
 ]

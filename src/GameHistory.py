@@ -21,9 +21,11 @@ class GameManagement:
     def __init__(self) -> None:
         self.users = []
         self.__load_users_from_file('data/users.json')
-        self.logeduser = None
-        
-    def __load_users_from_file(self, filename: str):
+    
+    '''
+    :param filename: Nome do arquivo
+    '''    
+    def __load_users_from_file(self, filename: str) -> None:
         if os.path.exists(filename):
             try:
                 with open(filename, 'r') as file:
@@ -38,6 +40,9 @@ class GameManagement:
                 print(f"Erro ao ler o arquivo {filename}. O arquivo pode estar vazio ou corrompido.")
                 self.users = []
     
+    '''
+    :param filename: Nome do arquivo
+    '''   
     def __save_users_to_file(self, filename: str):
         users_data = []
         for user in self.users:
@@ -51,22 +56,41 @@ class GameManagement:
         
         with open(filename, 'w') as file:
             json.dump(users_data, file, indent=4)
-    
+
+    '''
+    :param name: nome do usuario
+    :param password: senha do usuario
+    :return: retorna 0 se o login foi benm sucedido, -1 caso contrario
+    '''      
     def logIn(self, name: str, password: str) -> int:
         for user in self.users:
             if user.name == name and self.verify_password(password, user):
                 self.logeduser = user
                 return 0
         return -1
-    
+
+    '''
+    :param password: Senha do usuario
+    :return: retorna o hash utilizando o SHA-256
+    '''     
     def __getHashfromPassword(self, password: str) -> str:
-        # Usando SHA-256
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         return hashed_password
-    
+
+    '''
+    :param password: senha a ser verificada
+    :param user: usuario
+    :return: retorna se password é igual a senha de user
+    '''     
     def verify_password(self, password: str, user: User) -> bool:
         return self.__getHashfromPassword(password) == user.passwordHash
 
+    '''
+    :param name: nome do usuario
+    :param password: senha do usuario
+    :param isAdmin: se o usuario é admin
+    :return: se o usuario foi add com sucesso
+    ''' 
     def addUser(self, name: str, password: str, isAdmin: bool = False) -> bool:
         passwordHash = self.__getHashfromPassword(password)
         
@@ -85,6 +109,9 @@ class GameManagement:
         self.__create_user_json(name)
         return True
 
+    '''
+    :param user: usuario que tera seu historico de partidas printado
+    ''' 
     def printUserHistory(self, user: User):
         filename = f'data/{user.name}_games.json'
         
@@ -98,7 +125,11 @@ class GameManagement:
         for game in user_data['games']:
             print(f"Oponente: {game['opponent']}\nResultado: {game['result']}\n")
         return True
-        
+    
+    '''
+    :param username: nome do usurio
+    : -> O metodo cria o arquivo Json associado a um usuario
+    ''' 
     def __create_user_json(self, username: str):
         filename = f'data/{username}_games.json'
         if not os.path.exists(filename):
@@ -108,16 +139,13 @@ class GameManagement:
                     "games": []
                 }
                 json.dump(user_data, file, indent=4)
-                    
                 
-    def validUser(self, name : str , password : str) -> bool:
-        if len(self.users) != 0:
-            user = User(name, self.__getHashfromPassword(password))
-            for user in self.users:
-                if user == user:
-                    return True
-                
-                        
+    '''
+    :param name: o nome do usuario
+    :param password: senha do usuario
+    :parm isAdmin: se o usuario eh admin
+    :return: retorna o usuario criado
+    '''                         
     def createUser(self, name: str, password: str, isAdmin: bool = False) -> User:
         passwordHash = self.__getHashfromPassword(password)
         if isAdmin:
@@ -125,7 +153,14 @@ class GameManagement:
         else:
             return User(name, passwordHash)
 
-    def createAcount(self, name: str , password : str) -> int:
+    '''
+    : => O metodo cria uma conta do usuario e o add. ao banco de dados
+    :param name: o nome do usuario
+    :param password: senha do usuario
+    :parm isAdmin: se o usuario eh admin
+    :return: retorna se foi um sucesso ou o erro associado
+    '''  
+    def createAcount(self, name: str , password : str, isAdmin : bool = False) -> int:
         passwordHash = self.__getHashfromPassword(password)
         if len(self.users) != 0:
             temp = User(name, passwordHash)
@@ -138,8 +173,15 @@ class GameManagement:
         
         self.addUser(name, password)
         return 0 # conta criada com sucesso
-        
-    def addGame(self, whiteuser: User, blackuser: User, fen: str, result: int):
+
+    '''
+    : => Add. um jogo ao historioco dos usuarios
+    :param whiteuser: o usuario que jogou com as brancas
+    :param blackuser: o usuario que jogou com as pretas
+    :parm result : resultado 3 caso as brancas ganharam, 2 caso as pretas, 3 caso empate
+    :return: se a alteraça foi feita com sucesso
+    '''          
+    def addGame(self, whiteuser: User, blackuser: User, result: int) -> bool:
         whiteresult = -1
         blackresult = -1
         if(result == 2):
@@ -195,18 +237,9 @@ class GameManagement:
         print("Nova partida adicionada com sucesso para ambos os jogadores.")
         return True
         
-        
+    '''
+    :param password: senha a ser validada
+    :return: retorna True, pois todas senhas sao validas
+    '''      
     def __isPasswordValid(self, password : str):
         return True
-    
-def main():
-    gm = GameManagement()
-    
-    gm.addUser("pedro","batata")
-    
-    # Mostrar todos os usuários
-    print("\nLista de usuários:")
-    for user in gm.users:
-        role = "Admin" if isinstance(user, UserAdmin) else "User"
-        print(f"Nome: {user.name}, Papel: {role}")
-

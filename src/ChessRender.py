@@ -19,6 +19,10 @@ from .Empty import *
 from interfaces import *
 
 class ChessRender(ChessRenderInterface):
+    '''
+    :param board: o estado do jogo (eh att automaticamente)
+    : => Desse modo, ao att. no jogo att. automaticamente na tela
+    ''' 
     def __init__(self, board : ChessBoard) -> None:
         self.__shouldclose = False
         self.__board = board
@@ -33,27 +37,49 @@ class ChessRender(ChessRenderInterface):
         self.__SelectedPiece = Position(-1,-1)
         self.__possibleDest = []
 
+
+    '''
+    :return: retorna a posicao da peça selecionada
+    ''' 
     def getSelectedPiecePos(self) -> Position:
         return self.__SelectedPiece
 
-    def updateSelectedPiece(self, pos : Position):
+    '''
+    : => Metodo responsavel por att. a peça selecionada
+    :param pos: Posicao da nova peça selecionada
+    ''' 
+    def updateSelectedPiece(self, pos : Position) -> None:
         self.__SelectedPiece = pos
         self.__isPieceSelected = not(self.__isPieceSelected)
         if self.__isPieceSelected:
             self.__possibleDest = self.__board.getMoves(self.__SelectedPiece)
-        
+
+    '''
+    : => Metodo responsavel por fechar a janela
+    '''        
     def quit(self) -> None:
         pygame.quit()
-    
+
+
+    '''
+    : => Metodo responsavel por verificar e settar se a janela deve fechar
+    '''   
     def setShouldclose(self) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.__shouldclose = True
-    
-    def getShouldclose(self):
+ 
+ 
+    '''
+    : return: retorna se a janela deve fechar
+    '''   
+    def getShouldclose(self) -> bool:
         return self.__shouldclose
-        
-    def renderBoard(self) -> None:
+    
+    '''
+    : => Metodo auxiliar responsavel por renderizar o tabuleiro
+    '''    
+    def __renderBoard(self) -> None:
         for row in range (0,8):
             for col in range (0,8):
                 isLight = (row + col) % 2 == 0
@@ -62,8 +88,12 @@ class ChessRender(ChessRenderInterface):
                     pygame.draw.rect(self.__screen , light, rec)
                 elif (isLight == False):
                     pygame.draw.rect(self.__screen , dark, rec)
-    
-    def renderPiece(self) -> None:
+
+
+    '''
+    : => Metodo auxiliar responsavel por renderizar todas as peças no tabuleiro
+    '''    
+    def __renderPiece(self) -> None:
         for row in range (0,8):
             for col in range (0,8):
                 piece = self.__board.getPiece(Position(row,col))
@@ -73,7 +103,11 @@ class ChessRender(ChessRenderInterface):
                 piece_image = pygame.transform.scale(piece_image, (squareSize, squareSize) )
                 self.__screen.blit(piece_image,(col*squareSize,row*squareSize))
     
-    def renderAllMoves(self) -> None:
+
+    '''
+    : => Metodo auxiliar responsavel por renderizar todos destinos de um dado jogador
+    '''  
+    def __renderAllMoves(self) -> None:
         if self.__isPieceSelected == False:
             return
         movess = self.__board.validmoves
@@ -82,30 +116,39 @@ class ChessRender(ChessRenderInterface):
                 pos = Position(move.endRow , move.endCol)
                 rec = pygame.Rect(pos.getCol()*squareSize, pos.getRow()*squareSize,squareSize,squareSize )
                 pygame.draw.rect(self.__screen , reddd, rec)
-    
-    def renderPossibleDestinations(self) -> None:
+
+    '''
+    : => Metodo auxiliar responsavel por renderizar possiveis destinos
+    '''   
+    def __renderPossibleDestinations(self) -> None:
         if (self.__board.getMoveMade() == True) and (self.__isPieceSelected == False):
             self.__alpha_surface.fill((255, 255, 255,0))
         elif self.__possibleDest is not None:
             for pos in self.__possibleDest:
                 rec = pygame.Rect(pos.getCol()*squareSize, pos.getRow()*squareSize,squareSize,squareSize )
                 pygame.draw.rect(self.__alpha_surface , reddd , rec)
-
+    '''
+    : => Metodo responsavel por renderizar a janela + infos na tela
+    '''
     def render(self) -> None:
-        self.renderBoard()
-        self.renderPossibleDestinations()
-        self.renderPiece()
+        self.__renderBoard()
+        self.__renderPossibleDestinations()
+        self.__renderPiece()
         self.__screen.blit(self.__alpha_surface, (0,0))
         pygame.display.flip()
         
     def targetFps(self) -> None:
         self.clock.tick(1)
-    
+        
+    '''
+    : => Metodo responsavel por lidar com eventos
+    :return: retorna o evendo ocorrido( ex : CLOSEGAME , UNDOMOVE , clique na tela )
+    '''  
     def handle_events(self):
         waiting = True
         while waiting:
             if self.getShouldclose():
-                return -1
+                return CLOSEGAME
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.__shouldclose = True

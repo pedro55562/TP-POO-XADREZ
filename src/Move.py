@@ -2,7 +2,14 @@ from .Position import *
 from .constantes import *
 
 class Move:
-    def __init__(self, start : Position , end : Position , board , isenpassant = False , isCastleMove = False ) -> None:
+    '''
+    :param start: Casa de inicio do movimento
+    :param end: Casa de destino do movimento
+    :param board: o estado atual do tabuleiro
+    :param isenpassant: se o movimento é um enpassant
+    :param iscastlemove: se o movimento é um roque
+    '''  
+    def __init__(self, start : Position , end : Position , board , isenpassant : bool = False , isCastleMove : bool = False ) -> None:
         # Armazenar Posiçoes...
         self.startRow = start.getRow()
         self.startCol = start.getCol()
@@ -22,18 +29,25 @@ class Move:
         if self.isEnPassantMove:
             self.pieceCaptured = board[self.startRow][self.endCol]
         
-        
-    def __eq__(self,other):
+    '''
+    :param other: Outro moviento a ser verficado 
+    :return: Se o movimenntos sao iguais
+    '''          
+    def __eq__(self,other) -> bool:
         if isinstance(other,Move):
             return (self.moveId == other.moveId)
         return False
     
-    #implementando o rank-file notation   
+    '''
+    :return: Notação de xadrez para o movimento( ex: "e2 e4" )
+    '''  
     def getChessNotation(self) -> str:
-        #ToDo: add things to make REAL chess notation
         return str(self.getRankFile(self.startRow, self.startCol)) +" " + str(self.getRankFile(self.endRow, self.endCol))
-        
-    def getRankFile(self, row, col):
-        #file than rank 
-        #ex: a8
+
+    '''
+    :param row: A linha
+    :param col: A coluna 
+    :return: A posicao na notação do xadrez
+    '''          
+    def getRankFile(self, row : int, col : int) -> str:
         return colsTOfiles[col] + rowsTOranks[row]

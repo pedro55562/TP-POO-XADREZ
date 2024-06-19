@@ -180,7 +180,7 @@ def startGame(gm : GameManagement):
     # Substitua a chamada de game() pela sua implementação de jogo de xadrez
     winner_is_white = game()
     
-    gm.addGame(white_user, black_user, "FEN_final_aqui", winner_is_white)
+    gm.addGame(white_user, black_user, winner_is_white)
     print("Partida registrada com sucesso.")
 
 def main():
