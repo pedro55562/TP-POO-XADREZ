@@ -4,24 +4,44 @@ from .Position import *
 from interfaces import *
 
 class Piece(PieceInterface, ABC):
-    def __init__(self, Position, color, type, num=0) -> None:
+    '''
+    :param Position: Posição da peça
+    :param color : a cor da peça
+    :param type : tipo da peça
+    :param num : numero de vezes que a peça se moveu
+    '''    
+    def __init__(self, Position : Position, color : int, type : int, num=0) -> None:
         self.__position = Position
         self.__color = color
         self.__type = type
         self.numofmoves = num
 
-    def getPosition(self):
+    '''
+    :return: A posicao da peça
+    '''   
+    def getPosition(self) -> Position:
         return self.__position
-
+    '''
+    :param: A nova posicao da peça
+    '''    
     def attPosition(self, pos : Position):
         self.__position.setPosition(pos)
-    
-    def getColor(self):
+
+    '''
+    :return: A cor da peça
+    '''        
+    def getColor(self)->int:
         return self.__color    
-    
-    def getType(self):
+    '''
+    :return: O tipo da peça
+    '''    
+    def getType(self)-> int:
         return self.__type 
-   
+
+    '''
+    :param to: casa de destino do moviento 
+    :return: Se o movimento eh valido
+    '''
     @abstractmethod
-    def IsValidMove(self, to):
+    def IsValidMove(self, to : Position) -> bool:
         pass
