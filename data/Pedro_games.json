@@ -1,0 +1,9 @@
+{
+    "player_name": "Pedro",
+    "games": [
+        {
+            "opponent": "pedro",
+            "result": "derrota"
+        }
+    ]
+}

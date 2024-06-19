@@ -1,0 +1,14 @@
+[
+    {
+        "name": "Pedro",
+        "passwordHash": "1cfafff6d51a03662b85b93dc3417f51687034ba9a46682f5328257eff7133ed"
+    },
+    {
+        "name": "pedro",
+        "passwordHash": "1cfafff6d51a03662b85b93dc3417f51687034ba9a46682f5328257eff7133ed"
+    },
+    {
+        "name": "philipe",
+        "passwordHash": "1cfafff6d51a03662b85b93dc3417f51687034ba9a46682f5328257eff7133ed"
+    }
+]

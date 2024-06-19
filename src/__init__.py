@@ -11,3 +11,4 @@ from .Empty import *
 from .ChessBoard import *
 from .ChessRender import *
 from .Move import *
+from .GameHistory import *
