@@ -521,7 +521,7 @@ class ChessBoard(ChessBoardInterface):
         self.__enpassantPossible = tempEnPassant
         self.__isenpassantAvaliable = tempAvaliable
         
-        moves.extend(self.getCastleMoves())
+        moves.extend(self.__getCastleMoves())
         
         return moves
     
@@ -562,7 +562,7 @@ class ChessBoard(ChessBoardInterface):
                     pos = Position(row,col)
                     
                     if ( piece.getType() == KING):
-                        moves.extend(self.getKingMoves(pos))
+                        moves.extend(self.__getKingMoves(pos))
 
                     if ( piece.getType() == PAWN):
                         prow = [-1,-2,1,2]
@@ -591,18 +591,18 @@ class ChessBoard(ChessBoardInterface):
                                     moves.append(Move(pos, dest, self.__board ))
 
                     if piece.getType() == BISHOP:
-                        moves.extend(self.getBishopMoves(pos))
+                        moves.extend(self.__getBishopMoves(pos))
 
                         
                     if piece.getType() == QUEEN:
-                        moves.extend(self.getQueenMoves(pos))
+                        moves.extend(self.__getQueenMoves(pos))
 
 
                     if piece.getType() == KNIGHT:
-                        moves.extend(self.getKnightMoves(pos))
+                        moves.extend(self.__getKnightMoves(pos))
 
                     if piece.getType() == ROOK:
-                        moves.extend(self.getRookMoves(pos))
+                        moves.extend(self.__getRookMoves(pos))
 
         return moves                      
 
@@ -610,7 +610,7 @@ class ChessBoard(ChessBoardInterface):
     : param start: A posicao a partir da qual os movs. serao gerados 
     : return: todos os movimentos do rei a partir de uma dada posicao
     '''   
-    def getKingMoves(self,start : Position) -> List[Move]:
+    def __getKingMoves(self,start : Position) -> List[Move]:
         kdir = [0, 1, -1]
         moves = []
         allycolor = self.getPiece(start).getColor()
@@ -632,7 +632,7 @@ class ChessBoard(ChessBoardInterface):
     : param start: A posicao a partir da qual os movs. serao gerados 
     : return: todos os movimentos do bispo a partir de uma dada posicao
     '''       
-    def getBishopMoves(self,start : Position)  -> List[Move]:
+    def __getBishopMoves(self,start : Position)  -> List[Move]:
         dir1 = [1, -1]
         dir2 = [1, -1]
         moves = []
@@ -651,7 +651,7 @@ class ChessBoard(ChessBoardInterface):
     : param start: A posicao a partir da qual os movs. serao gerados 
     : return: todos os movimentos da rainha a partir de uma dada posicao
     '''  
-    def getQueenMoves(self,start : Position) -> List[Move]:
+    def __getQueenMoves(self,start : Position) -> List[Move]:
         moves = []
         dir_row = [1, -1, 0, 0]
         dir_col = [0, 0, 1, -1]
@@ -692,7 +692,7 @@ class ChessBoard(ChessBoardInterface):
     : param start: A posicao a partir da qual os movs. serao gerados 
     : return: todos os movimentos do cavalo a partir de uma dada posicao
     '''                
-    def getKnightMoves(self,start : Position) -> List[Move]:
+    def __getKnightMoves(self,start : Position) -> List[Move]:
         moves = []
         valid_moves = [(-1, 2), (-1, -2), (1, 2), (1, -2), (-2, 1), (-2, -1), (2, 1), (2, -1)]
         for dr, dc in valid_moves:
@@ -707,7 +707,7 @@ class ChessBoard(ChessBoardInterface):
     : param start: A posicao a partir da qual os movs. serao gerados 
     : return: todos os movimentos da torre a partir de uma dada posicao
     '''             
-    def getRookMoves(self,start) -> List[Move]:
+    def __getRookMoves(self,start) -> List[Move]:
         dir_row = [1, -1]
         dir_col = [1, -1]
         moves = []
@@ -737,15 +737,15 @@ class ChessBoard(ChessBoardInterface):
     ''' 
     : return: todos os movimentos de roque
     '''     
-    def getCastleMoves(self) -> List[Move]:
+    def __getCastleMoves(self) -> List[Move]:
         if self.__inCheck():
             return []
         start = Position(7,4) if self.isWhiteTurn else Position(0,4)
         allycolor = WHITEn if self.isWhiteTurn else BLACKn
         
         moves = []
-        moves.extend(self.getKingSideCastle(start ,allycolor))
-        moves.extend(self.getQueenSideCastle(start ,allycolor))        
+        moves.extend(self.__getKingSideCastle(start ,allycolor))
+        moves.extend(self.__getQueenSideCastle(start ,allycolor))        
         
         return moves
   
@@ -754,7 +754,7 @@ class ChessBoard(ChessBoardInterface):
     : param allycolor: cor dos aliados
     : return: todos os movimentos de p/ o lado do rei
     '''    
-    def getKingSideCastle(self, start : Position, allycolor : int):
+    def __getKingSideCastle(self, start : Position, allycolor : int):
         row = start.getRow()
         col = start.getCol()
         moves = []
@@ -777,7 +777,7 @@ class ChessBoard(ChessBoardInterface):
     : param allycolor: cor dos aliados
     : return: todos os movimentos de p/ o lado da rainha
     '''           
-    def getQueenSideCastle(self, start : Position , allycolor : int) -> List[Move]:
+    def __getQueenSideCastle(self, start : Position , allycolor : int) -> List[Move]:
         row = start.getRow()    
         col = start.getCol()
         moves = []
