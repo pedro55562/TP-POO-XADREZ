@@ -24,8 +24,11 @@ class CastlingRights():
         self.whiteQueenSide = wqs        
 
 class ChessBoard(ChessBoardInterface):
-    
-    def __init__(self, fen) -> None:
+    '''
+    :param fen: Fen o qual o tabuleiro deve ser inicializado
+    : vide: https://www.chess.com/terms/fen-chess
+    '''     
+    def __init__(self, fen : str) -> None:
         self.__board = np.full((8, 8), Empty(Position(0,0)))
         
         self.__white_king_pos = Position(-1,-1)
@@ -34,7 +37,7 @@ class ChessBoard(ChessBoardInterface):
         self.__move_log = []
         
 
-        self.__enpassantPossible = Position(-1,-1) # cordinates where en passant capture is possible
+        self.__enpassantPossible = Position(-1,-1)
         self.__isenpassantAvaliable = False
                 
         partes = fen.split(" ")
@@ -59,7 +62,7 @@ class ChessBoard(ChessBoardInterface):
                     self.__board[row][col] = Empty(Position(row, col))
                     col += 1
             else:
-                # Switch-case responsável por descobrir qual é a peça a ser inserida e inseri-la no tabuleiro
+                #if responsável por descobrir qual é a peça a ser inserida e inseri-la no tabuleiro
                 piece = None
                 if c == 'p':
                     piece = Pawn(Position(row,col) , BLACKn)
@@ -115,36 +118,49 @@ class ChessBoard(ChessBoardInterface):
         self.validmoves = self.getValidMoves()
         
         self.checkMate = False
-        self.stalteMate = False #  one side has NO legal moves to make and the king is not in check => DRAW
+        self.stalteMate = False #empate => NÃO esta em check e nao tem movs. validos
         
         self.playermademove = False
-        
-    def getPiece(self,row,col) -> Piece:
+
+    '''
+    :param row: linha da peca
+    :parm col: coluna da peca
+    :return: retorna a peça nessa posicao
+    '''          
+    def getPiece(self,row :int ,col : int) -> Piece:
         return self.__board[row][col]
 
+    '''
+    :param pos ; a posicao da peça
+    :return: retorna a peça nessa posicao
+    ''' 
     def getPiece(self,pos : Position) -> Piece:
         return self.__board[pos.getRow()][pos.getCol()]
-
-    def printBoard(self):
-        # Loop para imprimir os tipos das peças no tabuleiro
+    
+    '''
+    : => Imprime o estado atual do tabuleiro no terminal
+    '''  
+    def printBoard(self) -> None:
         print("\n Imprimindo o tipo das peças: \n")
         for i in range(len(self.__board)):
             for j in range(len(self.__board[i])):
                 print(" ", self.__board[i][j].getType(), end="")
-            print()  # Avança para a próxima linha após imprimir uma linha completa do tabuleiro
+            print()  
 
-        # Loop para imprimir as cores das peças no tabuleiro
         print("\n Imprimindo a cor das peças: \n")
         for i in range(len(self.__board)):
             for j in range(len(self.__board[i])):
                 print(" ", self.__board[i][j].numofmoves, end="")
-            print()  # Avança para a próxima linha após imprimir uma linha completa do tabuleiro
+            print()  
 
-        # Imprime a posição dos reis
         print(f"Rei branco:{self.__white_king_pos.getRow()} {self.__white_king_pos.getCol()}")
         print(f"Rei preto:{self.__black_king_pos.getRow()} {self.__black_king_pos.getCol()}") 
-        
-    def __makeMove(self, move : Move): 
+
+
+    '''
+    : param Move: Movimento a ser realizado
+    '''       
+    def __makeMove(self, move : Move) -> None: 
         self.getPiece(Position(move.startRow, move.startCol)).attPosition( Position(move.endRow, move.endCol))
         self.__board[move.startRow][move.startCol] = Empty(Position(move.startRow, move.startCol))
         self.__board[move.endRow][move.endCol] = move.pieceMoved
@@ -196,14 +212,20 @@ class ChessBoard(ChessBoardInterface):
         
         self.castleRightLog.append(CastlingRights(self.castlingRights.blackKingSide, self.castlingRights.blackQueenSide, 
                                                self.castlingRights.whiteKingSide, self.castlingRights.whiteQueenSide))
-
-    def printMoveLog(self):
+    
+    '''
+    : => Imprime o historico de movimentos no terminal
+    ''' 
+    def printMoveLog(self) -> None:
         if len(self.__move_log) == 0:
             return False
         for i in range( len(self.__move_log)):
             print(f"{i+1}) {self.__move_log[i].getChessNotation()  }")
-            
-    def updateCastlingRights(self):
+
+    '''
+    : => Atualiza os direitos ao roque
+    '''             
+    def updateCastlingRights(self) -> None:
         # Positions to check: (row, col) format
         rows = [0,7]
         cols = [0,4,7]
@@ -270,22 +292,32 @@ class ChessBoard(ChessBoardInterface):
         self.castlingRights.whiteQueenSide = rookrights.whiteQueenSide and kingrights.whiteQueenSide
         self.castlingRights.blackKingSide = rookrights.blackKingSide and kingrights.blackKingSide
         self.castlingRights.blackQueenSide = rookrights.blackQueenSide and kingrights.blackQueenSide
-                                  
-    def printCastlingRights(self):
+
+    '''
+    : => Imprime os direitos ao roque no terminal
+    '''                                    
+    def printCastlingRights(self)-> None:
         temp = self.castleRightLog[-1]
         print("WHITE KING SIDE:",temp.whiteKingSide)
         print("WHITE QUEEN SIDE:",temp.whiteQueenSide)
         print("BLACK KING SIDE:",temp.blackKingSide)
         print("BLACK QUEEN SIDE:",temp.blackQueenSide)
-           
-    def setNewValidmoves(self):
+
+    '''
+    : => Se um moiemento foi realizadom, att. a lista de movs. validos
+    : return: se a lista foi atualizada
+    '''             
+    def setNewValidmoves(self) -> bool:
         if (self.getMoveMade()):
             self.moveMade = False
             self.validmoves = self.getValidMoves()
             return True
         return False
-          
-    def undoMove(self):
+
+    '''
+    : => Desfaz o ultimo movimento
+    '''            
+    def undoMove(self) -> None:
         if len(self.__move_log) != 0:
             lastmove = self.__move_log.pop()
             if lastmove.startRow == lastmove.endRow and lastmove.startCol == lastmove.endCol:
@@ -306,11 +338,11 @@ class ChessBoard(ChessBoardInterface):
                 self.__enpassantPossible = Position(lastmove.endRow, lastmove.endCol)
                 self.__isenpassantAvaliable = True
             
-            #undo pawn advanced moves
+            #undo double pawn push
             if lastmove.pieceMoved.getType == PAWN and abs(lastmove.startRow - lastmove.endRow) == 2:
                 self.__isenpassantAvaliable = False
+                self.__enpassantPossible = Position(-1,-1)
 
-            #Make the castle move:
             if (lastmove.isCastleMove):
                 dir = lastmove.endCol - lastmove.startCol
                 if dir > 0: # king side castle(to the right)
@@ -347,13 +379,19 @@ class ChessBoard(ChessBoardInterface):
             self.castlingRights = self.castleRightLog[-1]
             self.updateCastlingRights()
             
-
-    def getMoveMade(self):
+    '''
+    : return: se um movimento foi realizado
+    '''  
+    def getMoveMade(self) -> bool:
         return self.moveMade
-            
-    def movePiece(self, from_ : Position , to : Position):
+
+    '''
+    : param from_: posicao de inicio
+    : param to : posicao de destino
+    : return: Se o movimento foi realizado com sucesso
+    '''            
+    def movePiece(self, from_ : Position , to : Position) -> bool:
         if (from_ == to):
-            print("EH IGUAL NÉ")
             return False     
         self.playermademove = self.isValidMove( Move(from_,to, self.__board  ))
         if( self.playermademove):
@@ -367,16 +405,23 @@ class ChessBoard(ChessBoardInterface):
                         move = Move(from_,to,self.__board, isCastleMove = True)
             self.__makeMove(move)
             return self.playermademove
-   
-#Considerando o xeque
-    def isValidMove(self, move : Move):
+
+    '''
+    : param move: movimento a ser realizado
+    : return: Se o movimento eh valido( considera o check )
+    '''         
+    def isValidMove(self, move : Move) -> bool:
         for i in range ( len(self.validmoves)):
             if move == self.validmoves[i]:
                 return True 
         return False
 
-#SEM considerar o xeque
-    def __isPossibleMove(self, from_ : Position , to : Position):
+    '''
+    : param from_: posicao de inicio
+    : param to : posicao de destino
+    : return: Se o movimento eh possivel( sem consideram o check)
+    ''' 
+    def __isPossibleMove(self, from_ : Position , to : Position) -> bool:
         if(self.getPiece(to).getColor() == self.getPiece(from_).getColor()):
             return False
         
@@ -394,6 +439,11 @@ class ChessBoard(ChessBoardInterface):
         
         return valid and isclear
 
+    '''
+    : param from_: posicao de inicio
+    : param to : posicao de destino
+    : return: Se o caminho esntre 2 posicoes esta limpo( nao possui pecas no caminho)
+    ''' 
     def __isPathClear(self, start : Position , to : Position):
         dr = to.getRow() - start.getRow()
         dc = to.getCol() - start.getCol()
@@ -429,7 +479,11 @@ class ChessBoard(ChessBoardInterface):
         else:
             return True
         return True
-               
+    
+    '''           
+    : param pos: posicao da peça
+    : return: Retorna uma lista de desinos que uma peça em uma dada pos pode ir realizar
+    ''' 
     def getMoves(self, pos  : Position) -> List[Position]:
         list_ = []
         piece = self.getPiece(pos)
@@ -440,25 +494,22 @@ class ChessBoard(ChessBoardInterface):
         
         return list_
 
-#TODOS Movimentos considerando o xeque
-    def getValidMoves(self):
+    '''           
+    : return: Uma lista com todos movimentos validos( considerando o check)
+    ''' 
+    def getValidMoves(self) -> List[Move]:
         tempEnPassant = self.__enpassantPossible
         tempAvaliable = self.__isenpassantAvaliable
-        # 1) Generate all the possibles moves
         moves = self.__getAllMoves()
-        # 2) For each move, make the move
-        for i in range(len(moves) - 1 , -1 , -1): # por estar removendo da lista, comece por tras
+        for i in range(len(moves) - 1 , -1 , -1): 
             self.__makeMove( moves[i] )
-            self.isWhiteTurn = not self.isWhiteTurn #destrocar os turnos porque make move o trocou
-            # 3) Generate all opponent's moves 
-            # 4) for each of your opponent's moves, see if they atack your king
+            self.isWhiteTurn = not self.isWhiteTurn 
             if self.__inCheck():
-                # 5) if they do atack your king, it's not valid
                 moves.remove(moves[i])
             self.isWhiteTurn = not self.isWhiteTurn        
             self.undoMove()
         
-        if ( len(moves) == 0): #Check mate or stalemate
+        if ( len(moves) == 0): 
             if self.__inCheck():
                 self.checkMate = True
             else:
@@ -470,34 +521,38 @@ class ChessBoard(ChessBoardInterface):
         self.__enpassantPossible = tempEnPassant
         self.__isenpassantAvaliable = tempAvaliable
         
-        #if it's a castle move
         moves.extend(self.getCastleMoves())
         
         return moves
     
-    #determina se o jogador atual esta em xeque 
-    def __inCheck(self):
+
+    '''           
+    : return: se jogador atual esta em check
+    ''' 
+    def __inCheck(self) -> bool:
         if self.isWhiteTurn:
             return self.__mySquareUnderAttack(self.__white_king_pos)
         else:
             return self.__mySquareUnderAttack(self.__black_king_pos)
-    
-    #verifica se o OPONENTE ataca um quadrado especifico - considera getAllMoves
-    def __mySquareUnderAttack(self, square : Position):
-        #switch to opponent's side of view, because i wanna see their moves
+
+    ''' 
+    : param square: posicao no tabuleiro          
+    : return: se o oponente atk um dado square
+    '''    
+    def __mySquareUnderAttack(self, square : Position) -> bool:
         self.isWhiteTurn = not self.isWhiteTurn
-        #generate all of my opponent's moves
         oppmoves = self.__getAllMoves()
-        #verify if any of their moves attack my square
         for moves in oppmoves:
             if moves.endRow == square.getRow() and moves.endCol == square.getCol():
-                self.isWhiteTurn = not self.isWhiteTurn # switch turns back
+                self.isWhiteTurn = not self.isWhiteTurn
                 return True
-        self.isWhiteTurn = not self.isWhiteTurn # switch turns back
+        self.isWhiteTurn = not self.isWhiteTurn 
         return False
    
-#TODOS Movimentos SEM considerar o xeque
-    def __getAllMoves(self):
+    ''' 
+    : return: todos movimentos possiveis( sem consideram o check)
+    '''    
+    def __getAllMoves(self) -> List[Move]:
         moves = []
         for row in range ( len(self.__board)):
             for col in range (len(self.__board[row])):
@@ -550,8 +605,12 @@ class ChessBoard(ChessBoardInterface):
                         moves.extend(self.getRookMoves(pos))
 
         return moves                      
-    
-    def getKingMoves(self,start):
+
+    ''' 
+    : param start: A posicao a partir da qual os movs. serao gerados 
+    : return: todos os movimentos do rei a partir de uma dada posicao
+    '''   
+    def getKingMoves(self,start : Position) -> List[Move]:
         kdir = [0, 1, -1]
         moves = []
         allycolor = self.getPiece(start).getColor()
@@ -568,8 +627,12 @@ class ChessBoard(ChessBoardInterface):
                     moves.append(Move(start, dest, self.__board ))        
         
         return moves
-     
-    def getBishopMoves(self,start):
+
+    ''' 
+    : param start: A posicao a partir da qual os movs. serao gerados 
+    : return: todos os movimentos do bispo a partir de uma dada posicao
+    '''       
+    def getBishopMoves(self,start : Position)  -> List[Move]:
         dir1 = [1, -1]
         dir2 = [1, -1]
         moves = []
@@ -583,8 +646,12 @@ class ChessBoard(ChessBoardInterface):
                     crow += dr
                     ccol += dc    
         return moves
-    
-    def getQueenMoves(self,start):
+
+    ''' 
+    : param start: A posicao a partir da qual os movs. serao gerados 
+    : return: todos os movimentos da rainha a partir de uma dada posicao
+    '''  
+    def getQueenMoves(self,start : Position) -> List[Move]:
         moves = []
         dir_row = [1, -1, 0, 0]
         dir_col = [0, 0, 1, -1]
@@ -620,8 +687,12 @@ class ChessBoard(ChessBoardInterface):
                 cur_row += dr
                 cur_col += dc                      
         return moves
-                
-    def getKnightMoves(self,start : Position):
+
+    ''' 
+    : param start: A posicao a partir da qual os movs. serao gerados 
+    : return: todos os movimentos do cavalo a partir de uma dada posicao
+    '''                
+    def getKnightMoves(self,start : Position) -> List[Move]:
         moves = []
         valid_moves = [(-1, 2), (-1, -2), (1, 2), (1, -2), (-2, 1), (-2, -1), (2, 1), (2, -1)]
         for dr, dc in valid_moves:
@@ -631,8 +702,12 @@ class ChessBoard(ChessBoardInterface):
                 if self.__isPossibleMove(start, dest):
                     moves.append(Move(start, dest, self.__board ))
         return moves
-            
-    def getRookMoves(self,start):
+
+    ''' 
+    : param start: A posicao a partir da qual os movs. serao gerados 
+    : return: todos os movimentos da torre a partir de uma dada posicao
+    '''             
+    def getRookMoves(self,start) -> List[Move]:
         dir_row = [1, -1]
         dir_col = [1, -1]
         moves = []
@@ -658,8 +733,11 @@ class ChessBoard(ChessBoardInterface):
                     break
                 cur_col += dc       
         return moves    
-    
-    def getCastleMoves(self):
+
+    ''' 
+    : return: todos os movimentos de roque
+    '''     
+    def getCastleMoves(self) -> List[Move]:
         if self.__inCheck():
             return []
         start = Position(7,4) if self.isWhiteTurn else Position(0,4)
@@ -670,8 +748,13 @@ class ChessBoard(ChessBoardInterface):
         moves.extend(self.getQueenSideCastle(start ,allycolor))        
         
         return moves
-    
-    def getKingSideCastle(self, start, allycolor):
+  
+    ''' 
+    : parm start: posicao do rei de inicio
+    : param allycolor: cor dos aliados
+    : return: todos os movimentos de p/ o lado do rei
+    '''    
+    def getKingSideCastle(self, start : Position, allycolor : int):
         row = start.getRow()
         col = start.getCol()
         moves = []
@@ -688,8 +771,13 @@ class ChessBoard(ChessBoardInterface):
 
 
         return moves     
-        
-    def getQueenSideCastle(self, start, allycolor):
+
+    ''' 
+    : parm start: posicao do rei de inicio
+    : param allycolor: cor dos aliados
+    : return: todos os movimentos de p/ o lado da rainha
+    '''           
+    def getQueenSideCastle(self, start : Position , allycolor : int) -> List[Move]:
         row = start.getRow()    
         col = start.getCol()
         moves = []
@@ -705,8 +793,13 @@ class ChessBoard(ChessBoardInterface):
 
 
         return moves     
-    
-    def __isPathSafe(self, start : Position , to : Position):
+   
+    ''' 
+    : param start: posicao de inicio
+    : param to: posicao de destino
+    : return: se o caminho entre start e to eh seguro
+    '''        
+    def __isPathSafe(self, start : Position , to : Position) -> bool:
         dr = to.getRow() - start.getRow()
         dc = to.getCol() - start.getCol()
         udr = 1 if dr > 0 else -1
