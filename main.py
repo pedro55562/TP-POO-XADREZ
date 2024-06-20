@@ -38,7 +38,6 @@ def game()-> int:
         if(chessboard.getMoveMade() == True):
             chessboard.setNewValidmoves()
               
-        print(f"\n\n {chessboard.checkMate} \n\n") 
         if(chessboard.checkMate):
             if( chessboard.isWhiteTurn):
                 graphicboard.quit()
@@ -55,7 +54,6 @@ def game()-> int:
         graphicboard.setShouldclose()
         graphicboard.render()
         
-        chessboard.printMoveLog()
                 
         event1 = graphicboard.handle_events()
         
@@ -175,13 +173,23 @@ def startGame(gm : GameManagement):
     black_user = loginUserForGame(gm, 'pretas')
     if not black_user:
         return
+
+    winner = game()
     
-    # Aqui você chamaria a função que inicia o jogo de xadrez e determina o vencedor
-    # Substitua a chamada de game() pela sua implementação de jogo de xadrez
-    winner_is_white = game()
+    if(winner == 1):#brancas
+        print("--------------------------------------------------")
+        print(f"\t Parabéns {white_user.name}!\n\t Voce ganhou a partida! ")
+        print("--------------------------------------------------")
+    if(winner == 2):#pretas
+        print("--------------------------------------------------")
+        print(f"\t Parabéns {black_user.name}!\n\t Voce ganhou a partida! ")
+        print("--------------------------------------------------")
+    if(winner == 3):#empate
+        print("--------------------------------------------------")
+        print(f"\tA partida entre {white_user.name} e {black_user.name} empatou!")
+        print("--------------------------------------------------")
     
-    gm.addGame(white_user, black_user, winner_is_white)
-    print("Partida registrada com sucesso.")
+    gm.addGame(white_user, black_user, winner)
 
 def main():
     gm = GameManagement()
@@ -212,4 +220,4 @@ def main():
             break
                     
 if __name__ == "__main__":
-    game()
+    main()

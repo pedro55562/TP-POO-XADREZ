@@ -2,8 +2,32 @@
     "player_name": "Pedro",
     "games": [
         {
-            "opponent": "pedro",
+            "opponent": "Jose",
+            "result": "vitoria"
+        },
+        {
+            "opponent": "Heitor",
             "result": "derrota"
+        },
+        {
+            "opponent": "Vitoria",
+            "result": "derrota"
+        },
+        {
+            "opponent": "Henrique",
+            "result": "vitoria"
+        },
+        {
+            "opponent": "João",
+            "result": "vitoria"
+        },
+        {
+            "opponent": "Jose",
+            "result": "vitoria"
+        },
+        {
+            "opponent": "Luana",
+            "result": "vitoria"
         }
     ]
 }
